@@ -1,0 +1,16 @@
+{
+  "name": "Portal Policía Local Gijón",
+  "short_name": "Portal Policia",
+  "description": "Repositorio de Instrucciones y Recursos de la Policía Local de Gijón",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#002B5B",
+  "theme_color": "#002B5B",
+  "icons": [
+    {
+      "src": "https://www.gijon.es/sites/default/files/2023-11/policia%20local%20gijon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

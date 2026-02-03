@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policía Local de Gijón | Manual de Instrucciones</title>
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Portal Policía">
+    <link rel="manifest" href="manifest.json">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+        }
+
+        .bg-navy {
+            background-color: #002B5B;
+        }
+
+        .text-navy {
+            color: #002B5B;
+        }
+
+        .bg-gold {
+            background-color: #FFD700;
+        }
+
+        .text-gold {
+            color: #FFD700;
+        }
+
+        .instruction-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .content-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.3s ease-in;
+            opacity: 0;
+        }
+
+        .instruction-card.active .content-panel {
+            max-height: 500px;
+            opacity: 1;
+            padding-top: 1rem;
+        }
+
+        .instruction-card.active .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        .action-button {
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-10 px-4 sm:px-6">
+
+    <div class="max-w-xl mx-auto space-y-10">
+        <!-- Header -->
+        <header class="text-center space-y-4">
+            <div class="inline-block p-1 bg-white rounded-full shadow-xl border border-slate-100">
+                <img src="https://www.gijon.es/sites/default/files/2023-11/policia%20local%20gijon.png"
+                    alt="Escudo Oficial Policía Local de Gijón" class="w-24 h-24 rounded-full object-contain">
+            </div>
+            <div class="space-y-1">
+                <h1 class="text-2xl font-bold text-navy tracking-tight">POLICÍA LOCAL DE GIJÓN</h1>
+                <p class="text-slate-500 font-medium text-sm">Repositorio de Instrucciones y Recursos</p>
+                <div class="flex justify-center pt-2">
+                    <div class="h-1 w-12 bg-gold rounded-full"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Container de Instrucciones (Se llena dinámicamente) -->
+        <div class="space-y-4" id="instructions-container"></div>
+
+        <!-- Footer -->
+        <footer class="pt-10 pb-6 text-center space-y-4">
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-slate-400 hover:text-navy transition-colors">
+                    <i data-lucide="twitter" class="w-5 h-5"></i>
+                </a>
+                <a href="#" class="text-slate-400 hover:text-navy transition-colors">
+                    <i data-lucide="globe" class="w-5 h-5"></i>
+                </a>
+            </div>
+            <div class="text-[10px] text-slate-400 leading-relaxed max-w-xs mx-auto">
+                &copy; 2024 Ayuntamiento de Gijón. <br>
+                Uso exclusivo para personal autorizado.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN DE INSTRUCCIONES
+        // Añade aquí nuevas instrucciones fácilmente
+        // ==========================================
+        const instructionsData = [
+            {
+                id: 1,
+                title: "Nota Informativa 28/01/2026",
+                subtitle: "Protocolos y Licencias Instruccion 2/2025",
+                icon: "book-open",
+                active: true, // true para que aparezca abierta, false cerrada
+                links: [
+                    { label: "Instrucción (PDF)", url: "nota informativa permisos.pdf", type: "pdf", icon: "file-text", color: "red" },
+                    { label: "Presentación", url: "Permisos_Policía_Local_Flujo_Doble_Vía.pdf", type: "pdf", icon: "presentation", color: "blue" },
+                    { label: "Infografía", url: "notaInformativa.png", type: "img", icon: "layout", color: "amber" },
+                    { label: "Video", url: "Permisos.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                ]
+            },
+            {
+                id: 2,
+                title: "Instrucción 02",
+                subtitle: "Próximamente disponible",
+                icon: "lock",
+                active: false,
+                links: [] // Vacío para mostrar como bloqueado
+            }
+        ];
+
+        // Función para renderizar las instrucciones
+        function renderInstructions() {
+            const container = document.getElementById('instructions-container');
+            container.innerHTML = instructionsData.map(inst => `
+                <div class="instruction-card glass rounded-3xl shadow-sm border border-slate-200 overflow-hidden ${inst.active ? 'active' : ''} ${inst.links.length === 0 ? 'opacity-80' : ''}">
+                    <button onclick="toggleInstruction(this)" class="w-full flex items-center justify-between p-5 text-left focus:outline-none group">
+                        <div class="flex items-center space-x-4">
+                            <div class="p-3 ${inst.links.length > 0 ? 'bg-navy text-white shadow-lg' : 'bg-slate-200 text-slate-500'} rounded-2xl">
+                                <i data-lucide="${inst.icon}" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold ${inst.links.length > 0 ? 'text-slate-800' : 'text-slate-400'} text-lg">${inst.title}</h2>
+                                <p class="text-xs ${inst.links.length > 0 ? 'text-slate-500' : 'text-slate-400'} font-medium uppercase tracking-wide">${inst.subtitle}</p>
+                            </div>
+                        </div>
+                        <i data-lucide="${inst.links.length > 0 ? 'chevron-down' : 'lock'}" class="chevron-icon w-5 h-5 text-slate-400 transition-transform duration-300"></i>
+                    </button>
+
+                    ${inst.links.length > 0 ? `
+                    <div class="content-panel px-5 pb-6">
+                        <div class="grid grid-cols-1 gap-3">
+                            ${inst.links.map(link => `
+                                <a href="${link.url}" target="_blank" class="action-button flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
+                                    <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
+                                        <i data-lucide="${link.icon}" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="flex-grow font-semibold text-slate-700">${link.label}</span>
+                                    <i data-lucide="arrow-right" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            // Re-inicializar iconos de Lucide tras renderizar
+            lucide.createIcons();
+        }
+
+        function toggleInstruction(button) {
+            const card = button.parentElement;
+            // Solo toggle si tiene links
+            if (card.querySelector('.content-panel')) {
+                card.classList.toggle('active');
+            }
+        }
+
+        // Carga inicial
+        renderInstructions();
+    </script>
+</body>
+
+</html>
