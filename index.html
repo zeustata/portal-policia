@@ -162,15 +162,25 @@
                     ${inst.links.length > 0 ? `
                     <div class="content-panel px-5 pb-6">
                         <div class="grid grid-cols-1 gap-3">
-                            ${inst.links.map(link => `
-                                <a href="${link.url}" target="_blank" class="action-button flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
+                            ${inst.links.map(link => {
+                // Truco para visualizar PDFs en el móvil sin descargar
+                let finalUrl = link.url;
+                if (link.type === 'pdf') {
+                    // Construimos la URL absoluta de GitHub para que Google pueda verla
+                    const absoluteUrl = `https://zeustata.github.io/portal-policia/${link.url}`;
+                    finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
+                }
+
+                return `
+                                <a href="${finalUrl}" target="_blank" class="action-button flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
                                     <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
                                         <i data-lucide="${link.icon}" class="w-5 h-5"></i>
                                     </div>
                                     <span class="flex-grow font-semibold text-slate-700">${link.label}</span>
                                     <i data-lucide="arrow-right" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
                                 </a>
-                            `).join('')}
+                                `;
+            }).join('')}
                         </div>
                     </div>
                     ` : ''}
