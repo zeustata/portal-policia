@@ -16,6 +16,22 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F8FAFC;
@@ -76,7 +92,7 @@
 
 <body class="min-h-screen py-10 px-4 sm:px-6">
 
-    <div class="max-w-xl mx-auto space-y-10">
+    <div class="max-w-xl mx-auto space-y-10 animate-fade-in">
         <!-- Header -->
         <header class="text-center space-y-4">
             <div class="inline-block p-1 bg-white rounded-full shadow-xl border border-slate-100">
@@ -166,9 +182,15 @@
                 // Truco para visualizar PDFs en el móvil sin descargar
                 let finalUrl = link.url;
                 if (link.type === 'pdf') {
-                    // Construimos la URL absoluta de GitHub para que Google pueda verla
-                    const absoluteUrl = `https://zeustata.github.io/portal-policia/${link.url}`;
-                    finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
+                    // Si estamos en local (file://) o en localhost, abrimos el PDF directamente
+                    const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                    if (isLocal) {
+                        finalUrl = link.url;
+                    } else {
+                        const absoluteUrl = new URL(link.url, window.location.href).href;
+                        finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
+                    }
                 }
 
                 return `
@@ -197,6 +219,26 @@
             if (card.querySelector('.content-panel')) {
                 card.classList.toggle('active');
             }
+        }
+
+        // Registro de Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => {
+                        console.log('SW registrado');
+                        reg.onupdatefound = () => {
+                            const installingWorker = reg.installing;
+                            installingWorker.onstatechange = () => {
+                                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nuevo contenido disponible, refrescamos automáticamente
+                                    window.location.reload();
+                                }
+                            };
+                        };
+                    })
+                    .catch(err => console.log('SW falló', err));
+            });
         }
 
         // Carga inicial
