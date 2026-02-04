@@ -189,7 +189,9 @@
                         finalUrl = link.url;
                     } else {
                         const absoluteUrl = new URL(link.url, window.location.href).href;
-                        finalUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
+                        // Añadimos un pequeño "truco" (timestamp) para que Google no use una versión vieja si falló antes
+                        const cacheBuster = `?t=${new Date().getTime()}`;
+                        finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl + cacheBuster)}&embedded=true`;
                     }
                 }
 
