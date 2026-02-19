@@ -128,10 +128,59 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* PWA Install Banner Style */
+        #pwa-install-banner {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 9999;
+            animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
 <body class="min-h-screen py-10 px-4 sm:px-6">
+
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner"
+        class="glass rounded-2xl shadow-2xl border border-white/50 p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-navy p-2 rounded-xl text-white shadow-lg">
+                <i data-lucide="download" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-navy">Instala nuestro portal</p>
+                <p class="text-[10px] text-slate-500 font-medium" id="pwa-install-text">Accede rápido desde tu
+                    escritorio</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="pwa-install-btn"
+                class="bg-navy text-white px-4 py-2 rounded-xl text-xs font-bold hover:scale-105 transition-transform active:scale-95 shadow-md">
+                Instalar
+            </button>
+            <button id="pwa-close-banner" class="p-2 text-slate-400 hover:text-navy">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
 
     <div class="max-w-xl mx-auto space-y-8 animate-fade-in">
         <!-- Header -->
@@ -408,7 +457,55 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            initPWAInstallLogic();
         });
+
+        // ==========================================
+        // LÓGICA DE INSTALACIÓN PWA
+        // ==========================================
+        let deferredPrompt;
+        const banner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const closeBtn = document.getElementById('pwa-close-banner');
+        const installText = document.getElementById('pwa-install-text');
+
+        function initPWAInstallLogic() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+            if (isStandalone) return; // Si ya es app, no molestamos
+
+            if (isIOS) {
+                // Configuración para iOS
+                installText.innerText = 'Pulsa Compartir y "Añadir a pantalla de inicio"';
+                installBtn.style.display = 'none'; // No hay botón de instalación en iOS
+                banner.style.display = 'flex';
+            }
+
+            // Capturar el prompt de Android
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                banner.style.display = 'flex';
+                lucide.createIcons();
+            });
+
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        banner.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                }
+            });
+
+            closeBtn.addEventListener('click', () => {
+                banner.style.animation = 'slideDown 0.3s ease-in reverse forwards';
+                setTimeout(() => { banner.style.display = 'none'; }, 300);
+            });
+        }
     </script>
 </body>
 
