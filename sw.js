@@ -7,17 +7,17 @@ const ASSETS = [
     'https://unpkg.com/lucide@latest'
 ];
 
-// Instalación: Guardar archivos esenciales
+// Instalación: Guardar archivos esenciales en la caché
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS);
         })
     );
-    self.skipWaiting(); // Forzar activación
+    self.skipWaiting(); // Forzar activación del nuevo service worker
 });
 
-// Activación: Limpiar cachés antiguas
+// Activación: Limpiar cachés antiguas que ya no son necesarias
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         Promise.all([
@@ -32,11 +32,11 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Estrategia: Network First para index.html, Cache First para el resto
+// Estrategia: "Network First" para el HTML, "Cache First" para el resto de recursos
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // Si es el HTML principal, intentamos red primero
+    // Si es el archivo HTML principal, intentamos obtenerlo de la red primero
     if (url.origin === location.origin && (url.pathname === '/' || url.pathname.endsWith('index.html'))) {
         event.respondWith(
             fetch(event.request)
@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
                 .catch(() => caches.match(event.request))
         );
     } else {
-        // Para lo demás (imágenes, scripts), caché primero
+        // Para el resto de recursos (imágenes, scripts, estilos), priorizamos la caché
         event.respondWith(
             caches.match(event.request).then((response) => {
                 return response || fetch(event.request);

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Policía Local de Gijón | Manual de Instrucciones</title>
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -87,12 +87,53 @@
         .action-button:hover {
             transform: translateY(-2px);
         }
+
+        /* Tab Styles */
+        .tab-button {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #002B5B;
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: #FFD700;
+            border-radius: 99px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        /* Responsive & Safe Area */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
 <body class="min-h-screen py-10 px-4 sm:px-6">
 
-    <div class="max-w-xl mx-auto space-y-10 animate-fade-in">
+    <div class="max-w-xl mx-auto space-y-8 animate-fade-in">
         <!-- Header -->
         <header class="text-center space-y-4">
             <div class="inline-block p-1 bg-white rounded-full shadow-xl border border-slate-100">
@@ -101,18 +142,91 @@
             </div>
             <div class="space-y-1">
                 <h1 class="text-2xl font-bold text-navy tracking-tight">POLICÍA LOCAL DE GIJÓN</h1>
-                <p class="text-slate-500 font-medium text-sm">Repositorio de Instrucciones y Recursos</p>
-                <div class="flex justify-center pt-2">
-                    <div class="h-1 w-12 bg-gold rounded-full"></div>
-                </div>
+                <p class="text-slate-500 font-medium text-sm">Portal de Recursos</p>
             </div>
         </header>
 
-        <!-- Container de Instrucciones (Se llena dinámicamente) -->
-        <div class="space-y-4" id="instructions-container"></div>
+        <!-- Tab Navigation -->
+        <nav class="flex justify-start sm:justify-center border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
+            <div class="flex space-x-2 px-2 sm:px-0 min-w-max mx-auto">
+                <button onclick="switchTab('home')" id="tab-home"
+                    class="tab-button active text-slate-400 font-semibold text-sm px-2 py-1">
+                    Inicio
+                </button>
+                <button onclick="switchTab('notes')" id="tab-notes"
+                    class="tab-button text-slate-400 font-semibold text-sm px-2 py-1">
+                    Notas
+                </button>
+                <button onclick="switchTab('info')" id="tab-info"
+                    class="tab-button text-slate-400 font-semibold text-sm px-2 py-1">
+                    Instrucciones
+                </button>
+                <button onclick="switchTab('dgt')" id="tab-dgt"
+                    class="tab-button text-slate-400 font-semibold text-sm px-2 py-1">
+                    Instrucciones DGT
+                </button>
+            </div>
+        </nav>
+
+        <!-- Tab Contents -->
+        <main>
+            <!-- Tab: Inicio -->
+            <section id="content-home" class="tab-content active space-y-6">
+                <div class="glass p-8 rounded-3xl shadow-sm border border-slate-200 text-center space-y-4">
+                    <div class="w-16 h-16 bg-navy/5 rounded-2xl flex items-center justify-center mx-auto text-navy">
+                        <i data-lucide="layout-dashboard" class="w-8 h-8"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="text-xl font-bold text-slate-800">Bienvenido al Portal</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed">
+                            Accede rápidamente a las instrucciones de servicio, notas informativas y recursos esenciales
+                            para el turno.
+                        </p>
+                    </div>
+                    <button onclick="switchTab('notes')"
+                        class="bg-navy text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
+                        Ver Notas e Instrucciones
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div
+                        class="glass p-5 rounded-2xl border border-slate-200 flex flex-col items-center text-center space-y-2">
+                        <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">Emergencia</span>
+                    </div>
+                    <div
+                        class="glass p-5 rounded-2xl border border-slate-200 flex flex-col items-center text-center space-y-2">
+                        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                            <i data-lucide="phone" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">Centralita</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Notas -->
+            <section id="content-notes" class="tab-content space-y-4">
+                <div id="instructions-container" class="space-y-4"></div>
+            </section>
+
+            <!-- Tab: Info -->
+            <section id="content-info" class="tab-content space-y-4">
+                <!-- Dynamic Instructions List -->
+                <div id="instrucciones-list-container" class="space-y-4"></div>
+            </section>
+
+            <!-- Tab: Instrucciones DGT -->
+            <section id="content-dgt" class="tab-content space-y-4">
+                <!-- Dynamic DGT Instructions List -->
+                <div id="dgt-list-container" class="space-y-4"></div>
+            </section>
+        </main>
 
         <!-- Footer -->
-        <footer class="pt-10 pb-6 text-center space-y-4">
+        <footer class="pt-6 pb-6 text-center space-y-4">
             <div class="flex justify-center space-x-6">
                 <a href="#" class="text-slate-400 hover:text-navy transition-colors">
                     <i data-lucide="twitter" class="w-5 h-5"></i>
@@ -130,8 +244,35 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN DE INSTRUCCIONES
-        // Añade aquí nuevas instrucciones fácilmente
+        // CONFIGURACIÓN DE PESTAÑAS
+        // ==========================================
+        function switchTab(tabId) {
+            // Documento activo
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById('content-' + tabId).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            // Re-inicializar iconos de Lucide por si acaso
+            lucide.createIcons();
+
+            // Renderizar contenido según pestaña
+            if (tabId === 'notes') {
+                renderInstructions();
+            } else if (tabId === 'info') {
+                renderInstruccionesList();
+            } else if (tabId === 'dgt') {
+                renderDGTList();
+            }
+        }
+
+        // ==========================================
+        // DATOS DE NOTAS
         // ==========================================
         const instructionsData = [
             {
@@ -139,7 +280,7 @@
                 title: "Nota Informativa 28/01/2026",
                 subtitle: "Protocolos y Licencias Instruccion 2/2025",
                 icon: "book-open",
-                active: true, // true para que aparezca abierta, false cerrada
+                active: false,
                 links: [
                     { label: "Instrucción (PDF)", url: "nota informativa permisos.pdf", type: "pdf", icon: "file-text", color: "red" },
                     { label: "Presentación", url: "Permisos_Policía_Local_Flujo_Doble_Vía.pdf", type: "pdf", icon: "presentation", color: "blue" },
@@ -149,18 +290,63 @@
             },
             {
                 id: 2,
-                title: "Instrucción 02",
+                title: "Notas 02",
                 subtitle: "Próximamente disponible",
                 icon: "lock",
                 active: false,
-                links: [] // Vacío para mostrar como bloqueado
+                links: []
             }
         ];
 
-        // Función para renderizar las instrucciones
+        // ==========================================
+        // DATOS DE INSTRUCCIONES
+        // ==========================================
+        const instruccionesListData = [
+            {
+                id: 1,
+                title: "Instrucciones 01",
+                subtitle: "Próximamente disponible",
+                icon: "lock",
+                active: false,
+                links: []
+            }
+        ];
+
+        // ==========================================
+        // DATOS DE INSTRUCCIONES DGT
+        // ==========================================
+        const instruccionesDGTData = [
+            {
+                id: 1,
+                title: "Instruccion 01",
+                subtitle: "Próximamente disponible",
+                icon: "lock",
+                active: false,
+                links: []
+            }
+        ];
+
         function renderInstructions() {
             const container = document.getElementById('instructions-container');
-            container.innerHTML = instructionsData.map(inst => `
+            if (!container) return;
+            renderDynamicList(container, instructionsData);
+        }
+
+        function renderInstruccionesList() {
+            const container = document.getElementById('instrucciones-list-container');
+            if (!container) return;
+            renderDynamicList(container, instruccionesListData);
+        }
+
+        function renderDGTList() {
+            const container = document.getElementById('dgt-list-container');
+            if (!container) return;
+            renderDynamicList(container, instruccionesDGTData);
+        }
+
+        // Función genérica para renderizar listas de tarjetas
+        function renderDynamicList(container, data) {
+            container.innerHTML = data.map(inst => `
                 <div class="instruction-card glass rounded-3xl shadow-sm border border-slate-200 overflow-hidden ${inst.active ? 'active' : ''} ${inst.links.length === 0 ? 'opacity-80' : ''}">
                     <button onclick="toggleInstruction(this)" class="w-full flex items-center justify-between p-5 text-left focus:outline-none group">
                         <div class="flex items-center space-x-4">
@@ -179,22 +365,14 @@
                     <div class="content-panel px-5 pb-6">
                         <div class="grid grid-cols-1 gap-3">
                             ${inst.links.map(link => {
-                // Truco para visualizar PDFs en el móvil sin descargar
                 let finalUrl = link.url;
                 if (link.type === 'pdf') {
-                    // Si estamos en local (file://) o en localhost, abrimos el PDF directamente
-                    const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-                    if (isLocal) {
-                        finalUrl = link.url;
-                    } else {
+                    const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost';
+                    if (!isLocal) {
                         const absoluteUrl = new URL(link.url, window.location.href).href;
-                        // Añadimos un pequeño "truco" (timestamp) para que Google no use una versión vieja si falló antes
-                        const cacheBuster = `?t=${new Date().getTime()}`;
-                        finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl + cacheBuster)}&embedded=true`;
+                        finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
                     }
                 }
-
                 return `
                                 <a href="${finalUrl}" target="_blank" class="action-button flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
                                     <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
@@ -210,41 +388,27 @@
                     ` : ''}
                 </div>
             `).join('');
-
-            // Re-inicializar iconos de Lucide tras renderizar
             lucide.createIcons();
         }
 
         function toggleInstruction(button) {
             const card = button.parentElement;
-            // Solo toggle si tiene links
             if (card.querySelector('.content-panel')) {
                 card.classList.toggle('active');
             }
         }
 
-        // Registro de Service Worker para PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => {
-                        console.log('SW registrado');
-                        reg.onupdatefound = () => {
-                            const installingWorker = reg.installing;
-                            installingWorker.onstatechange = () => {
-                                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // Nuevo contenido disponible, refrescamos automáticamente
-                                    window.location.reload();
-                                }
-                            };
-                        };
-                    })
+                    .then(reg => console.log('SW registrado'))
                     .catch(err => console.log('SW falló', err));
             });
         }
 
-        // Carga inicial
-        renderInstructions();
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
     </script>
 </body>
 
