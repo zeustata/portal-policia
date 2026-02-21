@@ -493,10 +493,9 @@
             renderDynamicList(container, utilidadesData);
         }
 
-        // Función genérica para renderizar listas de tarjetas
         function renderDynamicList(container, data) {
             const seenItems = getSeenItems();
-            container.innerHTML = data.map(inst => {
+            container.innerHTML = data.slice().reverse().map(inst => {
                 const isNew = !seenItems.includes(inst.id + '_' + container.id);
                 return `
                 <div class="instruction-card glass rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative ${inst.active ? 'active' : ''} ${inst.links.length === 0 ? 'opacity-80' : ''}" data-id="${inst.id}_${container.id}">
