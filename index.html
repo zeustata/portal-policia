@@ -270,9 +270,9 @@
                             para el turno.
                         </p>
                     </div>
-                    <button onclick="switchTab('notes')"
+                    <button onclick="openLatestContent()"
                         class="bg-navy text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
-                        Ver Notas e Instrucciones
+                        Últimas Notas e Instrucciones
                     </button>
                 </div>
 
@@ -383,6 +383,7 @@
         const instructionsData = [
             {
                 id: 1,
+                date: "2026-01-28",
                 title: "Nota Informativa 28/01/2026",
                 subtitle: "Protocolos y Licencias Instruccion 2/2025",
                 icon: "book-open",
@@ -396,6 +397,7 @@
             },
             {
                 id: 2,
+                date: "2026-02-21",
                 title: "Notas 02",
                 subtitle: "Próximamente disponible",
                 icon: "lock",
@@ -410,6 +412,7 @@
         const instruccionesListData = [
             {
                 id: 1,
+                date: "2025-04-24",
                 title: "PMR 24/04/2025",
                 subtitle: "Instrucción personas de movilidad reducida",
                 icon: "accessibility",
@@ -427,6 +430,7 @@
         const instruccionesDGTData = [
             {
                 id: 1,
+                date: "2025-01-01",
                 title: "Instruccion 01",
                 subtitle: "Próximamente disponible",
                 icon: "lock",
@@ -441,6 +445,7 @@
         const recursosData = [
             {
                 id: 1,
+                date: "2025-01-01",
                 title: "Recurso 01",
                 subtitle: "Próximamente disponible",
                 icon: "lock",
@@ -455,6 +460,7 @@
         const utilidadesData = [
             {
                 id: 1,
+                date: "2025-01-01",
                 title: "Utilidad 01",
                 subtitle: "Próximamente disponible",
                 icon: "lock",
@@ -570,6 +576,52 @@
                 seen.push(id);
                 localStorage.setItem('seen_items', JSON.stringify(seen));
             }
+        }
+
+        // ==========================================
+        // LÓGICA DE ÚLTIMA NOVEDAD ABSOLUTA
+        // ==========================================
+        function openLatestContent() {
+            // Recopilar todos los items con sus metadatos de categoría
+            const allItems = [
+                ...instructionsData.map(i => ({ ...i, tab: 'notes', containerId: 'instructions-container' })),
+                ...instruccionesListData.map(i => ({ ...i, tab: 'info', containerId: 'instrucciones-list-container' })),
+                ...instruccionesDGTData.map(i => ({ ...i, tab: 'dgt', containerId: 'dgt-list-container' })),
+                ...recursosData.map(i => ({ ...i, tab: 'recursos', containerId: 'recursos-list-container' })),
+                ...utilidadesData.map(i => ({ ...i, tab: 'utilidades', containerId: 'utilidades-list-container' }))
+            ].filter(item => item.links && item.links.length > 0);
+
+            if (allItems.length === 0) {
+                switchTab('notes');
+                return;
+            }
+
+            // Ordenar por fecha (desc) y por ID (desc)
+            allItems.sort((a, b) => {
+                const dateA = a.date || "2000-01-01";
+                const dateB = b.date || "2000-01-01";
+                if (dateB !== dateA) return dateB.localeCompare(dateA);
+                return b.id - a.id;
+            });
+
+            const latest = allItems[0];
+
+            // 1. Cambiar a la pestaña correspondiente
+            switchTab(latest.tab);
+
+            // 2. Esperar un instante a que se renderice y abrir el acordeón
+            setTimeout(() => {
+                const cardSelector = `[data-id="${latest.id}_${latest.containerId}"]`;
+                const card = document.querySelector(cardSelector);
+                if (card) {
+                    const button = card.querySelector('button');
+                    if (button && !card.classList.contains('active')) {
+                        toggleInstruction(button);
+                    }
+                    // Hacer scroll suave hacia el elemento
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         }
 
         if ('serviceWorker' in navigator) {
