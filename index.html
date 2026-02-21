@@ -212,7 +212,15 @@
                 </button>
                 <button onclick="switchTab('dgt')" id="tab-dgt"
                     class="tab-button text-slate-400 font-semibold text-sm px-1 py-1">
-                    InstruccionesDGT
+                    Inst.DGT
+                </button>
+                <button onclick="switchTab('recursos')" id="tab-recursos"
+                    class="tab-button hidden text-slate-400 font-semibold text-sm px-1 py-1">
+                    Recursos
+                </button>
+                <button onclick="switchTab('utilidades')" id="tab-utilidades"
+                    class="tab-button hidden text-slate-400 font-semibold text-sm px-1 py-1">
+                    Utilidades
                 </button>
             </div>
         </nav>
@@ -239,19 +247,19 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div
-                        class="glass p-5 rounded-2xl border border-slate-200 flex flex-col items-center text-center space-y-2">
-                        <div class="p-3 bg-red-50 text-red-600 rounded-xl">
-                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    <div onclick="switchTab('recursos')"
+                        class="glass p-5 rounded-2xl border border-slate-200 flex flex-col items-center text-center space-y-2 cursor-pointer hover:shadow-md transition-shadow active:scale-95">
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                            <i data-lucide="library" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-xs font-bold text-slate-700">Emergencia</span>
+                        <span class="text-xs font-bold text-slate-700">Recursos</span>
                     </div>
-                    <div
-                        class="glass p-5 rounded-2xl border border-slate-200 flex flex-col items-center text-center space-y-2">
-                        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
-                            <i data-lucide="phone" class="w-5 h-5"></i>
+                    <div onclick="switchTab('utilidades')"
+                        class="glass p-5 rounded-2xl border border-slate-200 flex flex-col items-center text-center space-y-2 cursor-pointer hover:shadow-md transition-shadow active:scale-95">
+                        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                            <i data-lucide="wrench" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-xs font-bold text-slate-700">Centralita</span>
+                        <span class="text-xs font-bold text-slate-700">Utilidades</span>
                     </div>
                 </div>
             </section>
@@ -272,20 +280,35 @@
                 <!-- Dynamic DGT Instructions List -->
                 <div id="dgt-list-container" class="space-y-4"></div>
             </section>
+
+            <!-- Tab: Recursos -->
+            <section id="content-recursos" class="tab-content space-y-4">
+                <div id="recursos-list-container" class="space-y-4"></div>
+            </section>
+
+            <!-- Tab: Utilidades -->
+            <section id="content-utilidades" class="tab-content space-y-4">
+                <div id="utilidades-list-container" class="space-y-4"></div>
+            </section>
         </main>
 
         <!-- Footer -->
         <footer class="pt-6 pb-6 text-center space-y-4">
             <div class="flex justify-center space-x-6">
-                <a href="#" class="text-slate-400 hover:text-navy transition-colors">
-                    <i data-lucide="twitter" class="w-5 h-5"></i>
+                <a href="https://x.com/PoliciaGijon" target="_blank"
+                    class="text-slate-400 hover:text-navy transition-colors">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.294 19.497h2.039L6.482 3.239H4.293l13.314 17.411z">
+                        </path>
+                    </svg>
                 </a>
                 <a href="#" class="text-slate-400 hover:text-navy transition-colors">
                     <i data-lucide="globe" class="w-5 h-5"></i>
                 </a>
             </div>
             <div class="text-[10px] text-slate-400 leading-relaxed max-w-xs mx-auto">
-                &copy; 2024 Ayuntamiento de Gijón. <br>
+                &copy; 2026 Ayuntamiento de Gijón. <br>
                 Uso exclusivo para personal autorizado.
             </div>
         </footer>
@@ -317,6 +340,10 @@
                 renderInstruccionesList();
             } else if (tabId === 'dgt') {
                 renderDGTList();
+            } else if (tabId === 'recursos') {
+                renderRecursosList();
+            } else if (tabId === 'utilidades') {
+                renderUtilidadesList();
             }
         }
 
@@ -378,6 +405,34 @@
             }
         ];
 
+        // ==========================================
+        // DATOS DE RECURSOS
+        // ==========================================
+        const recursosData = [
+            {
+                id: 1,
+                title: "Recurso 01",
+                subtitle: "Próximamente disponible",
+                icon: "lock",
+                active: false,
+                links: []
+            }
+        ];
+
+        // ==========================================
+        // DATOS DE UTILIDADES
+        // ==========================================
+        const utilidadesData = [
+            {
+                id: 1,
+                title: "Utilidad 01",
+                subtitle: "Próximamente disponible",
+                icon: "lock",
+                active: false,
+                links: []
+            }
+        ];
+
         function renderInstructions() {
             const container = document.getElementById('instructions-container');
             if (!container) return;
@@ -394,6 +449,18 @@
             const container = document.getElementById('dgt-list-container');
             if (!container) return;
             renderDynamicList(container, instruccionesDGTData);
+        }
+
+        function renderRecursosList() {
+            const container = document.getElementById('recursos-list-container');
+            if (!container) return;
+            renderDynamicList(container, recursosData);
+        }
+
+        function renderUtilidadesList() {
+            const container = document.getElementById('utilidades-list-container');
+            if (!container) return;
+            renderDynamicList(container, utilidadesData);
         }
 
         // Función genérica para renderizar listas de tarjetas
