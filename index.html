@@ -153,6 +153,36 @@
                 opacity: 1;
             }
         }
+
+        /* New Content Indicator */
+        .new-indicator {
+            position: absolute;
+            top: 20px;
+            right: 55px;
+            width: 8px;
+            height: 8px;
+            background-color: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            animation: pulse-yellow 2s infinite;
+        }
+
+        @keyframes pulse-yellow {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+            }
+        }
     </style>
 </head>
 
@@ -465,8 +495,12 @@
 
         // Función genérica para renderizar listas de tarjetas
         function renderDynamicList(container, data) {
-            container.innerHTML = data.map(inst => `
-                <div class="instruction-card glass rounded-3xl shadow-sm border border-slate-200 overflow-hidden ${inst.active ? 'active' : ''} ${inst.links.length === 0 ? 'opacity-80' : ''}">
+            const seenItems = getSeenItems();
+            container.innerHTML = data.map(inst => {
+                const isNew = !seenItems.includes(inst.id + '_' + container.id);
+                return `
+                <div class="instruction-card glass rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative ${inst.active ? 'active' : ''} ${inst.links.length === 0 ? 'opacity-80' : ''}" data-id="${inst.id}_${container.id}">
+                    ${isNew && inst.links.length > 0 ? '<div class="new-indicator"></div>' : ''}
                     <button onclick="toggleInstruction(this)" class="w-full flex items-center justify-between p-5 text-left focus:outline-none group">
                         <div class="flex items-center space-x-4">
                             <div class="p-3 ${inst.links.length > 0 ? 'bg-navy text-white shadow-lg' : 'bg-slate-200 text-slate-500'} rounded-2xl">
@@ -484,15 +518,15 @@
                     <div class="content-panel px-5 pb-6">
                         <div class="grid grid-cols-1 gap-3">
                             ${inst.links.map(link => {
-                let finalUrl = link.url;
-                if (link.type === 'pdf') {
-                    const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost';
-                    if (!isLocal) {
-                        const absoluteUrl = new URL(link.url, window.location.href).href;
-                        finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
+                    let finalUrl = link.url;
+                    if (link.type === 'pdf') {
+                        const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost';
+                        if (!isLocal) {
+                            const absoluteUrl = new URL(link.url, window.location.href).href;
+                            finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
+                        }
                     }
-                }
-                return `
+                    return `
                                 <a href="${finalUrl}" target="_blank" class="action-button flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
                                     <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
                                         <i data-lucide="${link.icon}" class="w-5 h-5"></i>
@@ -501,19 +535,41 @@
                                     <i data-lucide="arrow-right" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
                                 </a>
                                 `;
-            }).join('')}
+                }).join('')}
                         </div>
-                    </div>
                     ` : ''}
                 </div>
-            `).join('');
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
         function toggleInstruction(button) {
             const card = button.parentElement;
+            const itemId = card.getAttribute('data-id');
             if (card.querySelector('.content-panel')) {
                 card.classList.toggle('active');
+                if (itemId) {
+                    markAsSeen(itemId);
+                    const indicator = card.querySelector('.new-indicator');
+                    if (indicator) indicator.remove();
+                }
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DE VISTO/NO VISTO
+        // ==========================================
+        function getSeenItems() {
+            const seen = localStorage.getItem('seen_items');
+            return seen ? JSON.parse(seen) : [];
+        }
+
+        function markAsSeen(id) {
+            let seen = getSeenItems();
+            if (!seen.includes(id)) {
+                seen.push(id);
+                localStorage.setItem('seen_items', JSON.stringify(seen));
             }
         }
 
