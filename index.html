@@ -697,16 +697,21 @@
         const installText = document.getElementById('pwa-install-text');
 
         function initPWAInstallLogic() {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            // Detección mejorada para iOS y iPads modernos (que se identifican como Mac)
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-            if (isStandalone) return; // Si ya es app, no molestamos
+            if (isStandalone) return;
 
             if (isIOS) {
-                // Configuración para iOS
+                // Configuración específica para dispositivos Apple
                 installText.innerText = 'Pulsa Compartir y "Añadir a pantalla de inicio"';
-                installBtn.style.display = 'none'; // No hay botón de instalación en iOS
+                installBtn.style.display = 'none';
+                banner.classList.remove('hidden'); // Asegurar que no tenga clase hidden de Tailwind
                 banner.style.display = 'flex';
+                lucide.createIcons();
             }
 
             // Capturar el prompt de Android
