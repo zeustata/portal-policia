@@ -566,11 +566,9 @@
                                         <span class="flex-grow font-semibold text-slate-700">${link.label}</span>
                                         <i data-lucide="eye" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
                                     </a>
-                                    ${link.type === 'pdf' ? `
-                                    <a href="${link.url}" download="${link.label}.pdf" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
+                                    <a href="${finalUrl}" target="_blank" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
                                         <i data-lucide="download" class="w-5 h-5"></i>
                                     </a>
-                                    ` : ''}
                                 </div>
                                 `;
                 }).join('')}
