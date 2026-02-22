@@ -566,9 +566,9 @@
                                         <span class="flex-grow font-semibold text-slate-700">${link.label}</span>
                                         <i data-lucide="eye" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
                                     </a>
-                                    <a href="${link.url}" download class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
+                                    <button onclick="downloadFile('${link.url}', '${link.label}')" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
                                         <i data-lucide="download" class="w-5 h-5"></i>
-                                    </a>
+                                    </button>
                                 </div>
                                 `;
                 }).join('')}
@@ -590,6 +590,25 @@
                     const indicator = card.querySelector('.new-indicator');
                     if (indicator) indicator.remove();
                 }
+            }
+        }
+
+        async function downloadFile(url, filename) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                const extension = url.split('.').pop().split('?')[0];
+                link.download = `${filename}.${extension}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+                console.error('Error al descargar:', e);
+                window.open(url, '_blank');
             }
         }
 
