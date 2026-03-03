@@ -739,10 +739,10 @@
 
                     molinonVehicles = validData;
 
-                    // Limpiar cambios de estado que ya se reflejan en el servidor
+                    // Limpiar cambios de estado muy antiguos (más de 30s) para no saturar memoria
+                    const now = Date.now();
                     for (const id in pendingStatusChanges) {
-                        const serverVehicle = molinonVehicles.find(v => String(v.id) === String(id));
-                        if (serverVehicle && String(serverVehicle.status) === String(pendingStatusChanges[id])) {
+                        if (now - pendingStatusChanges[id].time > 30000) {
                             delete pendingStatusChanges[id];
                         }
                     }
@@ -844,9 +844,13 @@
 
             // Filtrar y limpiar: Solo objetos válidos con matrícula e ID
             // Aplicar cambios de estado pendientes locales para evitar "parpadeo"
+            // Ignoramos el servidor durante 15 segundos tras un cambio local
+            const now = Date.now();
             let filtered = allItems.map(v => {
-                const pStatus = pendingStatusChanges[v.id];
-                if (pStatus !== undefined) return { ...v, status: pStatus };
+                const pending = pendingStatusChanges[v.id];
+                if (pending && (now - pending.time < 15000)) {
+                    return { ...v, status: pending.status };
+                }
                 return v;
             }).filter(v => v && v.plate && v.id);
 
@@ -904,9 +908,9 @@
 
             try {
                 isSyncing = true;
-                // Cambio local instantáneo (optimista)
+                // Cambio local instantáneo con bloqueo de seguridad de 15s
                 const newStatus = vehicle.status === 'completado' ? 'pendiente' : 'completado';
-                pendingStatusChanges[id] = newStatus;
+                pendingStatusChanges[id] = { status: newStatus, time: Date.now() };
 
                 renderMolinonList();
 
