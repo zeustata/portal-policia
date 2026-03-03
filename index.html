@@ -734,7 +734,7 @@
             } catch (err) {
                 console.error("Error al sincronizar:", err);
                 const syncStatus = document.getElementById('molinon-sync-text');
-                if (syncStatus) syncStatus.innerText = "Error Sinc.";
+                if (syncStatus) syncStatus.innerText = "Err: " + (err.message || "Red");
             }
         }
 
