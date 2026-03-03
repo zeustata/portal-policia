@@ -379,7 +379,8 @@
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                         <span id="molinon-sync-text"
-                            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizado</span>
+                            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizado
+                            v1.2</span>
                     </div>
                 </div>
 
@@ -726,18 +727,18 @@
 
                 // Si el script de Google falla o devuelve algo raro, data podría no ser un array
                 if (Array.isArray(data)) {
-                    // Filtrar datos válidos que tengan ID
-                    const validData = data.filter(v => v && v.id);
+                    // Filtrar datos válidos que tengan ID y Matrícula
+                    const validData = data.filter(v => v && v.id && v.plate);
 
                     // Limpiar pendientes que ya estén en la respuesta del servidor
-                    const serverIds = validData.map(v => String(v.id));
+                    const serverIds = validData.map(v => String(v.id || ''));
                     pendingVehicles = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
 
                     molinonVehicles = validData;
                     renderMolinonList();
 
                     const syncStatus = document.getElementById('molinon-sync-text');
-                    if (syncStatus) syncStatus.innerText = "Sincronizado";
+                    if (syncStatus) syncStatus.innerText = "Sincronizado v1.2";
                 }
             } catch (err) {
                 console.error("Error al sincronizar:", err);
@@ -824,21 +825,21 @@
             if (!container) return;
 
             // Combinar datos del servidor con los pendientes locales (evitar duplicados por ID)
-            const serverIds = molinonVehicles.map(v => String(v.id));
+            const serverIds = molinonVehicles.map(v => String(v ? v.id : ''));
             const uniquePending = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
             const allItems = [...uniquePending, ...molinonVehicles];
 
-            // Filtrar y limpiar: Solo objetos válidos con matrícula
+            // Filtrar y limpiar: Solo objetos válidos con matrícula e ID
             let filtered = allItems.filter(v => v && v.plate && v.id);
 
             if (search) {
                 filtered = filtered.filter(v =>
-                    String(v.plate).toUpperCase().includes(search)
+                    v && v.plate && String(v.plate).toUpperCase().includes(search)
                 );
             }
 
-            if (zoneFilter !== 'todas') {
-                filtered = filtered.filter(v => v.zone === zoneFilter);
+            if (zoneFilter && zoneFilter !== 'todas') {
+                filtered = filtered.filter(v => v && v.zone === zoneFilter);
             }
 
             // Actualizar estadísticas con seguridad (comprobando si existen los elementos)
