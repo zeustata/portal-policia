@@ -700,6 +700,7 @@
         const MOLINON_API_URL = "https://script.google.com/macros/s/AKfycbyGMXLAhILpvaxNfCVgxFz1YzBWltVFi_jh_5KmX_YL6jMgmNNa5Vy9Nhdqf-QuSuz7/exec";
         let molinonVehicles = [];
         let pendingVehicles = []; // Vehículos añadidos localmente aún no confirmados por el server
+        let pendingStatusChanges = {}; // { id: status } Cambios de estado aún no confirmados
         let currentNewType = 'retirar';
         let isSyncing = false;
 
@@ -737,6 +738,15 @@
                     pendingVehicles = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
 
                     molinonVehicles = validData;
+
+                    // Limpiar cambios de estado que ya se reflejan en el servidor
+                    for (const id in pendingStatusChanges) {
+                        const serverVehicle = molinonVehicles.find(v => String(v.id) === String(id));
+                        if (serverVehicle && String(serverVehicle.status) === String(pendingStatusChanges[id])) {
+                            delete pendingStatusChanges[id];
+                        }
+                    }
+
                     renderMolinonList();
 
                     const syncStatus = document.getElementById('molinon-sync-text');
@@ -833,7 +843,12 @@
             const allItems = [...uniquePending, ...molinonVehicles];
 
             // Filtrar y limpiar: Solo objetos válidos con matrícula e ID
-            let filtered = allItems.filter(v => v && v.plate && v.id);
+            // Aplicar cambios de estado pendientes locales para evitar "parpadeo"
+            let filtered = allItems.map(v => {
+                const pStatus = pendingStatusChanges[v.id];
+                if (pStatus !== undefined) return { ...v, status: pStatus };
+                return v;
+            }).filter(v => v && v.plate && v.id);
 
             if (search) {
                 filtered = filtered.filter(v =>
@@ -890,7 +905,9 @@
             try {
                 isSyncing = true;
                 // Cambio local instantáneo (optimista)
-                vehicle.status = vehicle.status === 'completado' ? 'pendiente' : 'completado';
+                const newStatus = vehicle.status === 'completado' ? 'pendiente' : 'completado';
+                pendingStatusChanges[id] = newStatus;
+
                 renderMolinonList();
 
                 await fetch(MOLINON_API_URL, {
