@@ -378,7 +378,8 @@
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizado</span>
+                        <span id="molinon-sync-text"
+                            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizado</span>
                     </div>
                 </div>
 
@@ -693,18 +694,14 @@
         ];
 
         // ==========================================
-        // LÓGICA HERRAMIENTA MOLINÓN
+        // LÓGICA HERRAMIENTA MOLINÓN (Sincronizada con Google Sheets)
         // ==========================================
-        let molinonVehicles = [
-            { id: 101, plate: "1234 ABC", type: "retirar", status: "pendiente", zone: "Explanada Sur" },
-            { id: 102, plate: "5678 DEF", type: "mover", status: "pendiente", zone: "Explanada Este" },
-            { id: 103, plate: "9012 GHI", type: "retirar", status: "pendiente", zone: "Autoridades" },
-            { id: 104, plate: "3456 JKL", type: "mover", status: "completado", zone: "Peñas" },
-            { id: 105, plate: "7890 MNO", type: "retirar", status: "pendiente", zone: "Emtusa" }
-        ];
+        const MOLINON_API_URL = "https://script.google.com/macros/s/AKfycbyGMXLAhILpvaxNfCVgxFz1YzBWltVFi_jh_5KmX_YL6jMgmNNa5Vy9Nhdqf-QuSuz7/exec";
+        let molinonVehicles = [];
         let currentNewType = 'retirar';
+        let isSyncing = false;
 
-        function openMolinon() {
+        async function openMolinon() {
             // Actualizar fecha
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -712,6 +709,27 @@
 
             switchTab('molinon');
             setNewVehicleType('retirar');
+
+            // Carga inicial de datos
+            await fetchMolinonData();
+        }
+
+        async function fetchMolinonData() {
+            if (isSyncing) return;
+            try {
+                const response = await fetch(MOLINON_API_URL);
+                const data = await response.json();
+                molinonVehicles = data;
+                renderMolinonList();
+
+                // Actualizar estado de sincronización visual
+                const syncStatus = document.getElementById('molinon-sync-text');
+                if (syncStatus) syncStatus.innerText = "Sincronizado";
+            } catch (err) {
+                console.error("Error al sincronizar:", err);
+                const syncStatus = document.getElementById('molinon-sync-text');
+                if (syncStatus) syncStatus.innerText = "Error Sinc.";
+            }
         }
 
         function toggleMolinonForm() {
@@ -740,7 +758,7 @@
             }
         }
 
-        function addVehicle() {
+        async function addVehicle() {
             const plateInput = document.getElementById('new-plate');
             const plate = plateInput.value.trim().toUpperCase();
             const zone = document.getElementById('new-zone').value;
@@ -748,6 +766,7 @@
             if (!plate) return;
 
             const newVehicle = {
+                action: 'add',
                 id: Date.now(),
                 plate: plate,
                 type: currentNewType,
@@ -755,17 +774,31 @@
                 zone: zone
             };
 
-            molinonVehicles.unshift(newVehicle);
+            try {
+                isSyncing = true;
+                // Optimismo: mostrar en la UI antes de recibir confirmación
+                molinonVehicles.unshift(newVehicle);
+                renderMolinonList();
 
-            // Limpiar y resetear filtros para asegurar que se ve lo que se acaba de añadir
-            plateInput.value = '';
-            const searchInput = document.getElementById('molinon-search');
-            if (searchInput) searchInput.value = '';
-            const zoneFilter = document.getElementById('molinon-zone-filter');
-            if (zoneFilter) zoneFilter.value = 'todas';
+                await fetch(MOLINON_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para Google Apps Script
+                    body: JSON.stringify(newVehicle)
+                });
 
-            toggleMolinonForm();
-            renderMolinonList();
+                plateInput.value = '';
+                const searchInput = document.getElementById('molinon-search');
+                if (searchInput) searchInput.value = '';
+                const zoneFilter = document.getElementById('molinon-zone-filter');
+                if (zoneFilter) zoneFilter.value = 'todas';
+
+                toggleMolinonForm();
+                setTimeout(fetchMolinonData, 1000); // Refrescar para confirmar
+            } catch (err) {
+                console.error("Error al añadir:", err);
+            } finally {
+                isSyncing = false;
+            }
         }
 
         function renderMolinonList() {
@@ -810,20 +843,51 @@
             lucide.createIcons();
         }
 
-        function toggleVehicleStatus(id) {
-            const vehicle = molinonVehicles.find(v => v.id === id);
-            if (vehicle) {
+        async function toggleVehicleStatus(id) {
+            const vehicle = molinonVehicles.find(v => v.id == id);
+            if (!vehicle) return;
+
+            try {
+                isSyncing = true;
+                // Cambio local instantáneo (optimista)
                 vehicle.status = vehicle.status === 'completado' ? 'pendiente' : 'completado';
                 renderMolinonList();
+
+                await fetch(MOLINON_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ action: 'toggle', id: id })
+                });
+
+                setTimeout(fetchMolinonData, 500);
+            } catch (err) {
+                console.error("Error al cambiar estado:", err);
+            } finally {
+                isSyncing = false;
             }
         }
 
-        function clearMolinonVehicles() {
+        async function clearMolinonVehicles() {
             if (molinonVehicles.length === 0) return;
 
             if (confirm("¿Estás seguro de que quieres VACIAR TODA LA LISTA de matrículas? Esta acción no se puede deshacer.")) {
-                molinonVehicles = [];
-                renderMolinonList();
+                try {
+                    isSyncing = true;
+                    molinonVehicles = [];
+                    renderMolinonList();
+
+                    await fetch(MOLINON_API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({ action: 'clear' })
+                    });
+
+                    setTimeout(fetchMolinonData, 1000);
+                } catch (err) {
+                    console.error("Error al limpiar:", err);
+                } finally {
+                    isSyncing = false;
+                }
             }
         }
 
@@ -833,9 +897,7 @@
         // Simulacro de refresco automático (cada 10s)
         setInterval(() => {
             if (document.getElementById('content-molinon').classList.contains('active')) {
-                console.log('Refrescando datos Molinón...');
-                // Aquí se llamaría a la API en el futuro
-                renderMolinonList();
+                fetchMolinonData();
             }
         }, 10000);
 
