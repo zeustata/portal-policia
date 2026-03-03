@@ -189,6 +189,44 @@
                 box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
             }
         }
+
+        /* Molinón Tool Styles */
+        .vehicle-card {
+            transition: all 0.2s ease;
+        }
+
+        .vehicle-card.status-retirado,
+        .vehicle-card.status-movido {
+            opacity: 0.6;
+            background-color: #F1F5F9;
+        }
+
+        .plate-strikethrough {
+            text-decoration: line-through;
+            color: #94A3B8;
+        }
+
+        .badge-retirar {
+            background-color: #FEE2E2;
+            color: #B91C1C;
+        }
+
+        .badge-mover {
+            background-color: #DBEAFE;
+            color: #1D4ED8;
+        }
+
+        .status-dot-retirar {
+            background-color: #EF4444;
+        }
+
+        .status-dot-mover {
+            background-color: #3B82F6;
+        }
+
+        .status-dot-done {
+            background-color: #10B981;
+        }
     </style>
 </head>
 
@@ -326,6 +364,74 @@
             <section id="content-utilidades" class="tab-content space-y-4">
                 <div id="utilidades-list-container" class="space-y-4"></div>
             </section>
+
+            <!-- Tab: Herramienta Molinón -->
+            <section id="content-molinon" class="tab-content space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <button onclick="switchTab('home')"
+                        class="p-2 text-slate-500 hover:text-navy flex items-center text-sm font-semibold">
+                        <i data-lucide="chevron-left" class="w-5 h-5 mr-1"></i> Volver
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <span class="relative flex h-3 w-3">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sincronizado</span>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-3xl border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-navy">Control Molinón</h2>
+                            <p id="molinon-date" class="text-xs text-slate-500 font-medium"></p>
+                        </div>
+                        <span id="molinon-counter"
+                            class="bg-navy/5 text-navy px-3 py-1 rounded-full text-xs font-bold">0 Vehículos</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="relative col-span-2">
+                            <i data-lucide="search"
+                                class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                            <input type="text" id="molinon-search" placeholder="Buscar matrícula..."
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all">
+                        </div>
+                        <div class="col-span-2">
+                            <select id="molinon-zone-filter" onchange="renderMolinonList()"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-navy/10 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%2394a3b8%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25em_1.25em] bg-[right_1rem_center] bg-no-repeat transition-all">
+                                <option value="todas">Todas las Zonas</option>
+                                <option value="Explanada Sur">Explanada Sur</option>
+                                <option value="Explanada Este">Explanada Este</option>
+                                <option value="Autoridades">Autoridades</option>
+                                <option value="Peñas">Peñas</option>
+                                <option value="Emtusa">Emtusa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-slate-50 p-3 rounded-2xl text-center">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Pendientes</p>
+                            <p id="stats-pendiente" class="text-lg font-bold text-navy">0</p>
+                        </div>
+                        <div class="bg-red-50 p-3 rounded-2xl text-center">
+                            <p class="text-[10px] font-bold text-red-400 uppercase">Retirar</p>
+                            <p id="stats-retirar" class="text-lg font-bold text-red-600">0</p>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-2xl text-center">
+                            <p class="text-[10px] font-bold text-blue-400 uppercase">Mover</p>
+                            <p id="stats-mover" class="text-lg font-bold text-blue-600">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="molinon-list" class="space-y-3 pb-20">
+                    <!-- Vehículos se cargarán aquí -->
+                </div>
+            </section>
         </main>
 
         <!-- Footer -->
@@ -363,8 +469,11 @@
                 btn.classList.remove('active');
             });
 
-            document.getElementById('content-' + tabId).classList.add('active');
-            document.getElementById('tab-' + tabId).classList.add('active');
+            const content = document.getElementById('content-' + tabId);
+            if (content) content.classList.add('active');
+
+            const btn = document.getElementById('tab-' + tabId);
+            if (btn) btn.classList.add('active');
 
             // Re-inicializar iconos de Lucide por si acaso
             lucide.createIcons();
@@ -380,6 +489,8 @@
                 renderRecursosList();
             } else if (tabId === 'utilidades') {
                 renderUtilidadesList();
+            } else if (tabId === 'molinon') {
+                renderMolinonList();
             }
         }
 
@@ -518,46 +629,131 @@
         const utilidadesData = [
             {
                 id: 1,
-                date: "2025-01-01",
-                title: "Utilidad 01",
-                subtitle: "Próximamente disponible",
-                icon: "lock",
+                date: "2026-03-03",
+                title: "Estacionamientos Molinón",
+                subtitle: "Control de vehículos Estadio El Molinón",
+                icon: "car",
                 active: false,
-                links: []
+                action: "openMolinon()",
+                links: [
+                    { label: "Abrir Herramienta de Control", url: "javascript:openMolinon()", type: "tool", icon: "layout-template", color: "navy" }
+                ]
             }
         ];
+
+        // ==========================================
+        // LÓGICA HERRAMIENTA MOLINÓN
+        // ==========================================
+        let molinonVehicles = [
+            { id: 101, plate: "1234 ABC", type: "retirar", status: "pendiente", zone: "Explanada Sur" },
+            { id: 102, plate: "5678 DEF", type: "mover", status: "pendiente", zone: "Explanada Este" },
+            { id: 103, plate: "9012 GHI", type: "retirar", status: "pendiente", zone: "Autoridades" },
+            { id: 104, plate: "3456 JKL", type: "mover", status: "completado", zone: "Peñas" },
+            { id: 105, plate: "7890 MNO", type: "retirar", status: "pendiente", zone: "Emtusa" }
+        ];
+
+        function openMolinon() {
+            // Actualizar fecha
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('molinon-date').innerText = now.toLocaleDateString('es-ES', options);
+
+            switchTab('molinon');
+        }
+
+        function renderMolinonList() {
+            const container = document.getElementById('molinon-list');
+            const search = document.getElementById('molinon-search').value.toUpperCase();
+            const zoneFilter = document.getElementById('molinon-zone-filter').value;
+            if (!container) return;
+
+            let filtered = molinonVehicles.filter(v => v.plate.includes(search));
+            if (zoneFilter !== 'todas') {
+                filtered = filtered.filter(v => v.zone === zoneFilter);
+            }
+
+            // Actualizar estadísticas
+            document.getElementById('molinon-counter').innerText = `${filtered.length} Vehículos`;
+            document.getElementById('stats-pendiente').innerText = filtered.filter(v => v.status === 'pendiente').length;
+            document.getElementById('stats-retirar').innerText = filtered.filter(v => v.type === 'retirar' && v.status === 'pendiente').length;
+            document.getElementById('stats-mover').innerText = filtered.filter(v => v.type === 'mover' && v.status === 'pendiente').length;
+
+            container.innerHTML = filtered.map(v => `
+                <div class="vehicle-card glass p-4 rounded-2xl border border-slate-200 flex items-center justify-between ${v.status === 'completado' ? 'status-completado opacity-60 bg-slate-50' : ''}">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-2 h-10 rounded-full ${v.status === 'completado' ? 'status-dot-done' : (v.type === 'retirar' ? 'status-dot-retirar' : 'status-dot-mover')}"></div>
+                        <div>
+                            <p class="text-xl font-mono font-bold ${v.status === 'completado' ? 'plate-strikethrough' : 'text-slate-800'}">${v.plate}</p>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-[10px] font-bold uppercase tracking-wide ${v.type === 'retirar' ? 'text-red-500' : 'text-blue-500'}">
+                                    ${v.type === 'retirar' ? 'Retirar (Grúa)' : 'Mover (Anterior)'}
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">•</span>
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${v.zone}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="toggleVehicleStatus(${v.id})" 
+                        class="p-3 rounded-xl ${v.status === 'completado' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'} transition-all active:scale-90">
+                        <i data-lucide="${v.status === 'completado' ? 'check-circle' : 'circle'}" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function toggleVehicleStatus(id) {
+            const vehicle = molinonVehicles.find(v => v.id === id);
+            if (vehicle) {
+                vehicle.status = vehicle.status === 'completado' ? 'pendiente' : 'completado';
+                renderMolinonList();
+            }
+        }
+
+        // Evento búsqueda
+        document.getElementById('molinon-search')?.addEventListener('input', renderMolinonList);
+
+        // Simulacro de refresco automático (cada 10s)
+        setInterval(() => {
+            if (document.getElementById('content-molinon').classList.contains('active')) {
+                console.log('Refrescando datos Molinón...');
+                // Aquí se llamaría a la API en el futuro
+                renderMolinonList();
+            }
+        }, 10000);
 
         function renderInstructions() {
             const container = document.getElementById('instructions-container');
             if (!container) return;
-            renderDynamicList(container, instructionsData, true);
+            renderDynamicList(container, instructionsData, true, true);
         }
 
         function renderInstruccionesList() {
             const container = document.getElementById('instrucciones-list-container');
             if (!container) return;
-            renderDynamicList(container, instruccionesListData, true);
+            renderDynamicList(container, instruccionesListData, true, true);
         }
 
         function renderDGTList() {
             const container = document.getElementById('dgt-list-container');
             if (!container) return;
-            renderDynamicList(container, instruccionesDGTData, true);
+            renderDynamicList(container, instruccionesDGTData, true, true);
         }
 
         function renderRecursosList() {
             const container = document.getElementById('recursos-list-container');
             if (!container) return;
-            renderDynamicList(container, recursosData, false);
+            renderDynamicList(container, recursosData, false, true);
         }
 
         function renderUtilidadesList() {
             const container = document.getElementById('utilidades-list-container');
             if (!container) return;
-            renderDynamicList(container, utilidadesData, false);
+            renderDynamicList(container, utilidadesData, false, false);
         }
 
-        function renderDynamicList(container, data, reverse = true) {
+        function renderDynamicList(container, data, reverse = true, showDownload = true) {
             const seenItems = getSeenItems();
             const listToRender = reverse ? data.slice().reverse() : data;
             container.innerHTML = listToRender.map(inst => {
@@ -590,18 +786,21 @@
                             finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
                         }
                     }
+                    const isJS = link.url.startsWith('javascript:');
                     return `
                                 <div class="flex items-center space-x-2">
-                                    <a href="${finalUrl}" target="_blank" class="action-button flex-grow flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
+                                    <a href="${finalUrl}" ${isJS ? '' : 'target="_blank"'} class="action-button flex-grow flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
                                         <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
                                             <i data-lucide="${link.icon}" class="w-5 h-5"></i>
                                         </div>
                                         <span class="flex-grow font-semibold text-slate-700">${link.label}</span>
-                                        <i data-lucide="eye" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
+                                        <i data-lucide="${isJS ? 'chevron-right' : 'eye'}" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
                                     </a>
+                                    ${showDownload ? `
                                     <button onclick="downloadFile('${link.url}', '${inst.title} - ${link.label}')" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
                                         <i data-lucide="download" class="w-5 h-5"></i>
                                     </button>
+                                    ` : ''}
                                 </div>
                                 `;
                 }).join('')}
