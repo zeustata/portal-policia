@@ -718,7 +718,9 @@
 
         async function fetchMolinonData() {
             if (isSyncing) return;
+            const syncStatus = document.getElementById('molinon-sync-text');
             try {
+                if (syncStatus) syncStatus.innerText = "Sincronizando...";
                 // Añadir timestamp para evitar caché agresiva de algunos navegadores móviles
                 const response = await fetch(MOLINON_API_URL + "?t=" + Date.now(), {
                     cache: 'no-cache'
@@ -931,12 +933,12 @@
         // Evento búsqueda
         document.getElementById('molinon-search')?.addEventListener('input', renderMolinonList);
 
-        // Simulacro de refresco automático (cada 10s)
+        // Simulacro de refresco automático (cada 5s)
         setInterval(() => {
             if (document.getElementById('content-molinon').classList.contains('active')) {
                 fetchMolinonData();
             }
-        }, 10000);
+        }, 5000);
 
         function renderInstructions() {
             const container = document.getElementById('instructions-container');
