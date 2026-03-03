@@ -420,7 +420,12 @@
 
                     <div id="molinon-header-main" class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-xl font-bold text-navy">Control Molinón</h2>
+                            <div class="flex items-center space-x-2">
+                                <h2 class="text-xl font-bold text-navy">Control Molinón</h2>
+                                <span id="molinon-counter"
+                                    class="bg-navy/5 text-navy px-2 py-0.5 rounded-full text-[10px] font-bold mt-1">0
+                                    Vehículos</span>
+                            </div>
                             <p id="molinon-date" class="text-xs text-slate-500 font-medium"></p>
                         </div>
                         <button onclick="toggleMolinonForm()"
@@ -430,6 +435,7 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
+                        <div class="border-b border-slate-100 pb-2 col-span-2"></div>
                         <div class="relative col-span-2">
                             <i data-lucide="search"
                                 class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
