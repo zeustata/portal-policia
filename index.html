@@ -491,10 +491,22 @@
         const recursosData = [
             {
                 id: 1,
-                date: "2025-01-01",
-                title: "Recurso 01",
-                subtitle: "Próximamente disponible",
-                icon: "lock",
+                date: "2024-01-01",
+                title: "Convenio Colectivo 2024",
+                subtitle: "Ayuntamiento de Gijón",
+                icon: "scroll",
+                active: false,
+                links: [
+                    { label: "Acuerdos Comunes del Personal Funcionario y Laboral", url: "acuerdos_comunes_2024.pdf", type: "pdf", icon: "file-text", color: "blue" },
+                    { label: "Acuerdo Regulador del Personal Funcionario", url: "acuerdo_regulador_2024.pdf", type: "pdf", icon: "file-text", color: "blue" }
+                ]
+            },
+            {
+                id: 2,
+                date: "2024-01-01",
+                title: "Ordenanzas Municipales",
+                subtitle: "Ayuntamiento de Gijón",
+                icon: "library",
                 active: false,
                 links: []
             }
@@ -518,36 +530,37 @@
         function renderInstructions() {
             const container = document.getElementById('instructions-container');
             if (!container) return;
-            renderDynamicList(container, instructionsData);
+            renderDynamicList(container, instructionsData, true);
         }
 
         function renderInstruccionesList() {
             const container = document.getElementById('instrucciones-list-container');
             if (!container) return;
-            renderDynamicList(container, instruccionesListData);
+            renderDynamicList(container, instruccionesListData, true);
         }
 
         function renderDGTList() {
             const container = document.getElementById('dgt-list-container');
             if (!container) return;
-            renderDynamicList(container, instruccionesDGTData);
+            renderDynamicList(container, instruccionesDGTData, true);
         }
 
         function renderRecursosList() {
             const container = document.getElementById('recursos-list-container');
             if (!container) return;
-            renderDynamicList(container, recursosData);
+            renderDynamicList(container, recursosData, false);
         }
 
         function renderUtilidadesList() {
             const container = document.getElementById('utilidades-list-container');
             if (!container) return;
-            renderDynamicList(container, utilidadesData);
+            renderDynamicList(container, utilidadesData, false);
         }
 
-        function renderDynamicList(container, data) {
+        function renderDynamicList(container, data, reverse = true) {
             const seenItems = getSeenItems();
-            container.innerHTML = data.slice().reverse().map(inst => {
+            const listToRender = reverse ? data.slice().reverse() : data;
+            container.innerHTML = listToRender.map(inst => {
                 const isNew = !seenItems.includes(inst.id + '_' + container.id);
                 return `
                 <div class="instruction-card glass rounded-3xl shadow-sm border border-slate-200 overflow-hidden relative ${inst.active ? 'active' : ''} ${inst.links.length === 0 ? 'opacity-80' : ''}" data-id="${inst.id}_${container.id}">
