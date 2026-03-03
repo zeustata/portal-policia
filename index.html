@@ -726,11 +726,14 @@
 
                 // Si el script de Google falla o devuelve algo raro, data podría no ser un array
                 if (Array.isArray(data)) {
-                    // Limpiar pendientes que ya estén en la respuesta del servidor
-                    const serverIds = data.map(v => v.id.toString());
-                    pendingVehicles = pendingVehicles.filter(p => !serverIds.includes(p.id.toString()));
+                    // Filtrar datos válidos que tengan ID
+                    const validData = data.filter(v => v && v.id);
 
-                    molinonVehicles = data;
+                    // Limpiar pendientes que ya estén en la respuesta del servidor
+                    const serverIds = validData.map(v => String(v.id));
+                    pendingVehicles = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
+
+                    molinonVehicles = validData;
                     renderMolinonList();
 
                     const syncStatus = document.getElementById('molinon-sync-text');
@@ -821,16 +824,16 @@
             if (!container) return;
 
             // Combinar datos del servidor con los pendientes locales (evitar duplicados por ID)
-            const serverIds = molinonVehicles.map(v => v.id.toString());
-            const uniquePending = pendingVehicles.filter(p => !serverIds.includes(p.id.toString()));
+            const serverIds = molinonVehicles.map(v => String(v.id));
+            const uniquePending = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
             const allItems = [...uniquePending, ...molinonVehicles];
 
-            // Filtrar y limpiar
-            let filtered = allItems.filter(v => v && v.plate);
+            // Filtrar y limpiar: Solo objetos válidos con matrícula
+            let filtered = allItems.filter(v => v && v.plate && v.id);
 
             if (search) {
                 filtered = filtered.filter(v =>
-                    v.plate && v.plate.toString().toUpperCase().includes(search)
+                    String(v.plate).toUpperCase().includes(search)
                 );
             }
 
