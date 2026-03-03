@@ -717,14 +717,20 @@
         async function fetchMolinonData() {
             if (isSyncing) return;
             try {
-                const response = await fetch(MOLINON_API_URL);
+                // Añadir timestamp para evitar caché agresiva de algunos navegadores móviles
+                const response = await fetch(MOLINON_API_URL + "?t=" + Date.now(), {
+                    cache: 'no-cache'
+                });
                 const data = await response.json();
-                molinonVehicles = data;
-                renderMolinonList();
 
-                // Actualizar estado de sincronización visual
-                const syncStatus = document.getElementById('molinon-sync-text');
-                if (syncStatus) syncStatus.innerText = "Sincronizado";
+                // Si el script de Google falla o devuelve algo raro, data podría no ser un array
+                if (Array.isArray(data)) {
+                    molinonVehicles = data;
+                    renderMolinonList();
+
+                    const syncStatus = document.getElementById('molinon-sync-text');
+                    if (syncStatus) syncStatus.innerText = "Sincronizado";
+                }
             } catch (err) {
                 console.error("Error al sincronizar:", err);
                 const syncStatus = document.getElementById('molinon-sync-text');
@@ -812,11 +818,18 @@
                 filtered = filtered.filter(v => v.zone === zoneFilter);
             }
 
-            // Actualizar estadísticas
-            document.getElementById('molinon-counter').innerText = `${filtered.length} Vehículos`;
-            document.getElementById('stats-pendiente').innerText = filtered.filter(v => v.status === 'pendiente').length;
-            document.getElementById('stats-retirar').innerText = filtered.filter(v => v.type === 'retirar' && v.status === 'pendiente').length;
-            document.getElementById('stats-mover').innerText = filtered.filter(v => v.type === 'mover' && v.status === 'pendiente').length;
+            // Actualizar estadísticas con seguridad (comprobando si existen los elementos)
+            const counter = document.getElementById('molinon-counter');
+            if (counter) counter.innerText = `${filtered.length} Vehículos`;
+
+            const p = document.getElementById('stats-pendiente');
+            if (p) p.innerText = filtered.filter(v => v.status === 'pendiente').length;
+
+            const r = document.getElementById('stats-retirar');
+            if (r) r.innerText = filtered.filter(v => v.type === 'retirar' && v.status === 'pendiente').length;
+
+            const m = document.getElementById('stats-mover');
+            if (m) m.innerText = filtered.filter(v => v.type === 'mover' && v.status === 'pendiente').length;
 
             container.innerHTML = filtered.map(v => `
                 <div class="vehicle-card glass p-4 rounded-2xl border border-slate-200 flex items-center justify-between ${v.status === 'completado' ? 'status-completado opacity-60 bg-slate-50' : ''}">
