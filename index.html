@@ -383,13 +383,50 @@
                 </div>
 
                 <div class="glass p-6 rounded-3xl border border-slate-200 space-y-4">
-                    <div class="flex items-center justify-between">
+                    <!-- Formulario para agregar vehículo (Expandible) -->
+                    <div id="molinon-form-container" class="hidden space-y-4 border-b border-slate-100 pb-4 mb-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-navy">Registrar Nuevo Vehículo</h3>
+                            <button onclick="toggleMolinonForm()" class="text-slate-400 hover:text-red-500">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <input type="text" id="new-plate" placeholder="Matrícula"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-navy/10 uppercase font-mono font-bold">
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setNewVehicleType('retirar')" id="btn-type-retirar"
+                                    class="py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-400 transition-all">Retirar</button>
+                                <button onclick="setNewVehicleType('mover')" id="btn-type-mover"
+                                    class="py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-400 transition-all">Mover</button>
+                            </div>
+
+                            <select id="new-zone"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-navy/10">
+                                <option value="Explanada Sur">Explanada Sur</option>
+                                <option value="Explanada Este">Explanada Este</option>
+                                <option value="Autoridades">Autoridades</option>
+                                <option value="Peñas">Peñas</option>
+                                <option value="Emtusa">Emtusa</option>
+                            </select>
+
+                            <button onclick="addVehicle()"
+                                class="w-full bg-navy text-white py-4 rounded-2xl font-bold hover:shadow-lg active:scale-95 transition-all flex items-center justify-center">
+                                <i data-lucide="plus" class="w-5 h-5 mr-2"></i> Confirmar Registro
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="molinon-header-main" class="flex items-center justify-between">
                         <div>
                             <h2 class="text-xl font-bold text-navy">Control Molinón</h2>
                             <p id="molinon-date" class="text-xs text-slate-500 font-medium"></p>
                         </div>
-                        <span id="molinon-counter"
-                            class="bg-navy/5 text-navy px-3 py-1 rounded-full text-xs font-bold">0 Vehículos</span>
+                        <button onclick="toggleMolinonForm()"
+                            class="bg-navy text-white p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-90">
+                            <i data-lucide="plus" class="w-6 h-6"></i>
+                        </button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -651,6 +688,7 @@
             { id: 104, plate: "3456 JKL", type: "mover", status: "completado", zone: "Peñas" },
             { id: 105, plate: "7890 MNO", type: "retirar", status: "pendiente", zone: "Emtusa" }
         ];
+        let currentNewType = 'retirar';
 
         function openMolinon() {
             // Actualizar fecha
@@ -659,6 +697,53 @@
             document.getElementById('molinon-date').innerText = now.toLocaleDateString('es-ES', options);
 
             switchTab('molinon');
+            setNewVehicleType('retirar');
+        }
+
+        function toggleMolinonForm() {
+            const form = document.getElementById('molinon-form-container');
+            const header = document.getElementById('molinon-header-main');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                header.classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                header.classList.remove('hidden');
+            }
+        }
+
+        function setNewVehicleType(type) {
+            currentNewType = type;
+            const btnRetirar = document.getElementById('btn-type-retirar');
+            const btnMover = document.getElementById('btn-type-mover');
+
+            if (type === 'retirar') {
+                btnRetirar.className = 'py-3 rounded-2xl border-2 border-red-500 bg-red-50 text-sm font-bold text-red-600 transition-all';
+                btnMover.className = 'py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-400 transition-all';
+            } else {
+                btnMover.className = 'py-3 rounded-2xl border-2 border-blue-500 bg-blue-50 text-sm font-bold text-blue-600 transition-all';
+                btnRetirar.className = 'py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-400 transition-all';
+            }
+        }
+
+        function addVehicle() {
+            const plate = document.getElementById('new-plate').value.trim().toUpperCase();
+            const zone = document.getElementById('new-zone').value;
+
+            if (!plate) return;
+
+            const newVehicle = {
+                id: Date.now(),
+                plate: plate,
+                type: currentNewType,
+                status: 'pendiente',
+                zone: zone
+            };
+
+            molinonVehicles.unshift(newVehicle);
+            document.getElementById('new-plate').value = '';
+            toggleMolinonForm();
+            renderMolinonList();
         }
 
         function renderMolinonList() {
@@ -693,7 +778,7 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="toggleVehicleStatus(${v.id})" 
+                    <button onclick="toggleVehicleStatus(${v.id})"
                         class="p-3 rounded-xl ${v.status === 'completado' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'} transition-all active:scale-90">
                         <i data-lucide="${v.status === 'completado' ? 'check-circle' : 'circle'}" class="w-6 h-6"></i>
                     </button>
