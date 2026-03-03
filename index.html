@@ -428,10 +428,18 @@
                             </div>
                             <p id="molinon-date" class="text-xs text-slate-500 font-medium"></p>
                         </div>
-                        <button onclick="toggleMolinonForm()"
-                            class="bg-navy text-white p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-90">
-                            <i data-lucide="plus" class="w-6 h-6"></i>
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="clearMolinonVehicles()"
+                                class="p-3 rounded-2xl bg-red-50 text-red-500 hover:bg-red-100 transition-all active:scale-90"
+                                title="Vaciar toda la lista">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                            <button onclick="toggleMolinonForm()"
+                                class="bg-navy text-white p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-90"
+                                title="Añadir vehículo">
+                                <i data-lucide="plus" class="w-6 h-6"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -806,6 +814,15 @@
             const vehicle = molinonVehicles.find(v => v.id === id);
             if (vehicle) {
                 vehicle.status = vehicle.status === 'completado' ? 'pendiente' : 'completado';
+                renderMolinonList();
+            }
+        }
+
+        function clearMolinonVehicles() {
+            if (molinonVehicles.length === 0) return;
+
+            if (confirm("¿Estás seguro de que quieres VACIAR TODA LA LISTA de matrículas? Esta acción no se puede deshacer.")) {
+                molinonVehicles = [];
                 renderMolinonList();
             }
         }
