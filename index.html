@@ -727,7 +727,8 @@
         }
 
         function addVehicle() {
-            const plate = document.getElementById('new-plate').value.trim().toUpperCase();
+            const plateInput = document.getElementById('new-plate');
+            const plate = plateInput.value.trim().toUpperCase();
             const zone = document.getElementById('new-zone').value;
 
             if (!plate) return;
@@ -741,7 +742,14 @@
             };
 
             molinonVehicles.unshift(newVehicle);
-            document.getElementById('new-plate').value = '';
+
+            // Limpiar y resetear filtros para asegurar que se ve lo que se acaba de añadir
+            plateInput.value = '';
+            const searchInput = document.getElementById('molinon-search');
+            if (searchInput) searchInput.value = '';
+            const zoneFilter = document.getElementById('molinon-zone-filter');
+            if (zoneFilter) zoneFilter.value = 'todas';
+
             toggleMolinonForm();
             renderMolinonList();
         }
