@@ -698,6 +698,7 @@
         // ==========================================
         const MOLINON_API_URL = "https://script.google.com/macros/s/AKfycbyGMXLAhILpvaxNfCVgxFz1YzBWltVFi_jh_5KmX_YL6jMgmNNa5Vy9Nhdqf-QuSuz7/exec";
         let molinonVehicles = [];
+        let pendingVehicles = []; // Vehículos añadidos localmente aún no confirmados por el server
         let currentNewType = 'retirar';
         let isSyncing = false;
 
@@ -725,6 +726,10 @@
 
                 // Si el script de Google falla o devuelve algo raro, data podría no ser un array
                 if (Array.isArray(data)) {
+                    // Limpiar pendientes que ya estén en la respuesta del servidor
+                    const serverIds = data.map(v => v.id.toString());
+                    pendingVehicles = pendingVehicles.filter(p => !serverIds.includes(p.id.toString()));
+
                     molinonVehicles = data;
                     renderMolinonList();
 
@@ -782,8 +787,8 @@
 
             try {
                 isSyncing = true;
-                // Optimismo: mostrar en la UI antes de recibir confirmación
-                molinonVehicles.unshift(newVehicle);
+                // Guardar en pendientes para que no desaparezca durante el lag de Google
+                pendingVehicles.unshift(newVehicle);
                 renderMolinonList();
 
                 await fetch(MOLINON_API_URL, {
@@ -809,15 +814,24 @@
 
         function renderMolinonList() {
             const container = document.getElementById('molinon-list');
-            const search = document.getElementById('molinon-search').value.toUpperCase();
-            const zoneFilter = document.getElementById('molinon-zone-filter').value;
+            const searchInput = document.getElementById('molinon-search');
+            const search = searchInput ? searchInput.value.toUpperCase() : '';
+            const zoneFilterElement = document.getElementById('molinon-zone-filter');
+            const zoneFilter = zoneFilterElement ? zoneFilterElement.value : 'todas';
             if (!container) return;
 
-            // Filtrar primero que tengan matrícula y luego aplicar el buscador y zona
-            let filtered = molinonVehicles.filter(v => v && v.plate);
+            // Combinar datos del servidor con los pendientes locales (evitar duplicados por ID)
+            const serverIds = molinonVehicles.map(v => v.id.toString());
+            const uniquePending = pendingVehicles.filter(p => !serverIds.includes(p.id.toString()));
+            const allItems = [...uniquePending, ...molinonVehicles];
+
+            // Filtrar y limpiar
+            let filtered = allItems.filter(v => v && v.plate);
 
             if (search) {
-                filtered = filtered.filter(v => v.plate.toString().toUpperCase().includes(search));
+                filtered = filtered.filter(v =>
+                    v.plate && v.plate.toString().toUpperCase().includes(search)
+                );
             }
 
             if (zoneFilter !== 'todas') {
