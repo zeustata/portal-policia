@@ -813,7 +813,13 @@
             const zoneFilter = document.getElementById('molinon-zone-filter').value;
             if (!container) return;
 
-            let filtered = molinonVehicles.filter(v => v.plate.includes(search));
+            // Filtrar primero que tengan matrícula y luego aplicar el buscador y zona
+            let filtered = molinonVehicles.filter(v => v && v.plate);
+
+            if (search) {
+                filtered = filtered.filter(v => v.plate.toString().toUpperCase().includes(search));
+            }
+
             if (zoneFilter !== 'todas') {
                 filtered = filtered.filter(v => v.zone === zoneFilter);
             }
