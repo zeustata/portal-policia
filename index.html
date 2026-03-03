@@ -35,6 +35,10 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F8FAFC;
+            padding-top: env(safe-area-inset-top, 2.5rem);
+            padding-bottom: env(safe-area-inset-bottom, 2.5rem);
+            padding-left: env(safe-area-inset-left, 1rem);
+            padding-right: env(safe-area-inset-right, 1rem);
         }
 
         .bg-navy {
@@ -58,9 +62,11 @@
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
 
         .content-panel {
@@ -133,7 +139,7 @@
         #pwa-install-banner {
             display: none;
             position: fixed;
-            top: 20px;
+            top: calc(1rem + env(safe-area-inset-top, 0px));
             left: 50%;
             transform: translateX(-50%);
             width: calc(100% - 32px);
@@ -186,7 +192,7 @@
     </style>
 </head>
 
-<body class="min-h-screen py-10 px-4 sm:px-6">
+<body class="min-h-screen">
 
     <!-- PWA Install Banner -->
     <div id="pwa-install-banner"
@@ -392,7 +398,7 @@
                     { label: "Instrucción (PDF)", url: "nota informativa permisos.pdf", type: "pdf", icon: "file-text", color: "red" },
                     { label: "Presentación", url: "Permisos_Policía_Local_Flujo_Doble_Vía.pdf", type: "pdf", icon: "presentation", color: "blue" },
                     { label: "Infografía", url: "notaInformativa.png", type: "img", icon: "layout", color: "amber" },
-                    { label: "Video", url: "Permisos.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                    { label: "Vídeo", url: "Permisos.mp4", type: "video", icon: "play-circle", color: "indigo" }
                 ]
             },
             {
@@ -425,27 +431,41 @@
             {
                 id: 2,
                 date: "2026-02-21",
-                title: "Instruccion 7/2025",
-                subtitle: "Intervencion con menores",
+                title: "Instrucción 7/2025",
+                subtitle: "Intervención con menores",
                 icon: "baby",
                 active: false,
                 links: [
                     { label: "Presentación", url: "menores.pdf", type: "pdf", icon: "presentation", color: "blue" },
                     { label: "Infografía", url: "menores.png", type: "img", icon: "layout", color: "amber" },
-                    { label: "Video", url: "menores.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                    { label: "Vídeo", url: "menores.mp4", type: "video", icon: "play-circle", color: "indigo" }
                 ]
             },
             {
                 id: 3,
                 date: "2026-02-22",
-                title: "Instruccion 8/2025",
+                title: "Instrucción 8/2025",
                 subtitle: "Protocolo Cero VIOGEN",
                 icon: "shield-alert",
                 active: false,
                 links: [
                     { label: "Presentación", url: "protocoloCero.pdf", type: "pdf", icon: "presentation", color: "blue" },
                     { label: "Infografía", url: "protocoloCero.png", type: "img", icon: "layout", color: "amber" },
-                    { label: "Video", url: "protocoloCero.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                    { label: "Vídeo", url: "protocoloCero.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                ]
+            },
+            {
+                id: 4,
+                date: "2026-03-03",
+                title: "Instrucción Enfermos Psiquiátricos",
+                subtitle: "Intervención con enfermos psiquiátricos",
+                icon: "brain",
+                active: false,
+                links: [
+                    { label: "Instrucción", url: "enfermos_psiquiatricos_instruccion.pdf", type: "pdf", icon: "file-text", color: "red" },
+                    { label: "Presentación", url: "enfermos_psiquiatricos_presentacion.pdf", type: "pdf", icon: "presentation", color: "blue" },
+                    { label: "Infografía", url: "enfermos_psiquiatricos_infografia.jpg", type: "img", icon: "layout", color: "amber" },
+                    { label: "Vídeo", url: "enfermos_psiquiatricos_video.mp4", type: "video", icon: "play-circle", color: "indigo" }
                 ]
             }
         ];
@@ -457,7 +477,7 @@
             {
                 id: 1,
                 date: "2025-01-01",
-                title: "Instruccion 01",
+                title: "Instrucción 01",
                 subtitle: "Próximamente disponible",
                 icon: "lock",
                 active: false,
