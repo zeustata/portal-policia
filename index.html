@@ -664,7 +664,8 @@
                 active: false,
                 links: [
                     { label: "Acuerdos Comunes del Personal Funcionario y Laboral", url: "acuerdos_comunes_2024.pdf", type: "pdf", icon: "file-text", color: "blue" },
-                    { label: "Acuerdo Regulador del Personal Funcionario", url: "acuerdo_regulador_2024.pdf", type: "pdf", icon: "file-text", color: "blue" }
+                    { label: "Acuerdo Regulador del Personal Funcionario", url: "acuerdo_regulador_2024.pdf", type: "pdf", icon: "file-text", color: "blue" },
+                    { label: "Instrucción de Derechos", subtitle: "Vacaciones, Permisos y Licencias, Jornada y Horarios de trabajo", url: "Instruccion de derechos.pdf", type: "pdf", icon: "book-open", color: "blue" }
                 ]
             },
             {
@@ -1036,8 +1037,11 @@
                                         <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
                                             <i data-lucide="${link.icon}" class="w-5 h-5"></i>
                                         </div>
-                                        <span class="flex-grow font-semibold text-slate-700">${link.label}</span>
-                                        <i data-lucide="${isJS ? 'chevron-right' : 'eye'}" class="w-4 h-4 text-slate-300 group-hover:text-navy"></i>
+                                        <div class="flex-grow flex flex-col">
+                                            <span class="font-semibold text-slate-700">${link.label}</span>
+                                            ${link.subtitle ? `<span class="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">${link.subtitle}</span>` : ''}
+                                        </div>
+                                        <i data-lucide="${isJS ? 'chevron-right' : 'eye'}" class="w-4 h-4 text-slate-300 group-hover:text-navy ml-2"></i>
                                     </a>
                                     ${showDownload ? `
                                     <button onclick="downloadFile('${link.url}', '${inst.title} - ${link.label}')" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
