@@ -1115,6 +1115,7 @@
                     const isJS = link.url.startsWith('javascript:');
                     return `
                                 <div class="flex items-center space-x-2">
+                                    ${link.type === 'pdf' || isJS ? `
                                     <a href="${finalUrl}" ${isJS ? '' : 'target="_blank"'} class="action-button flex-grow flex items-center p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 group">
                                         <div class="p-2 bg-${link.color}-100 text-${link.color}-600 rounded-lg mr-4">
                                             <i data-lucide="${link.icon}" class="w-5 h-5"></i>
@@ -1137,22 +1138,21 @@
                                         <i data-lucide="maximize-2" class="w-4 h-4 text-slate-300 group-hover:text-navy ml-2"></i>
                                     </button>
                                     `}
-                                    ${ showDownload? `
+                                    ${showDownload ? `
                                     <button onclick="downloadFile('${link.url}', '${inst.title} - ${link.label}')" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
                                         <i data-lucide="download" class="w-5 h-5"></i>
                                     </button>
                                     ` : ''}
                                 </div>
                                 `;
-            }).join('')
-        }
-                        </div >
-                    </div >
-            ` : ''}
+                }).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
                 `;
             }).join('');
-        lucide.createIcons();
+            lucide.createIcons();
         }
 
         function toggleInstruction(button) {
@@ -1264,7 +1264,7 @@
             // Interceptar botón atrás para cerrar visor
             window.addEventListener('popstate', (event) => {
                 const viewer = document.getElementById('media-viewer');
-                if (viewer.classList.contains('active')) {
+                if (viewer && viewer.classList.contains('active')) {
                     closeMediaViewer(true); // Cerrar sin hacer back otra vez
                 }
             });
@@ -1290,7 +1290,7 @@
             let contentHTML = '';
 
             if (type === 'img' || url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-                contentHTML = `<img src="${url}" alt="${title}" onerror="this.src='https://via.placeholder.com/800x600?text=Error+al+cargar+imagen'">`;
+                contentHTML = `<img src="${url}" alt="${title}" class="max-w-full max-h-full object-contain">`;
             } else if (type === 'video' || url.match(/\.(mp4|webm|mov)$/i)) {
                 contentHTML = `<video src="${url}" controls autoplay playsinline class="w-full h-full"></video>`;
             } else if (type === 'pdf') {
@@ -1300,7 +1300,7 @@
                     const absoluteUrl = new URL(url, window.location.href).href;
                     finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(absoluteUrl)}&embedded=true`;
                 }
-                contentHTML = `<iframe src="${finalUrl}"></iframe>`;
+                contentHTML = `<iframe src="${finalUrl}" class="w-full h-full border-none bg-white"></iframe>`;
             } else {
                 contentHTML = `<div class="text-white text-center p-8">
                     <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
@@ -1317,7 +1317,7 @@
             const viewer = document.getElementById('media-viewer');
             const container = document.getElementById('viewer-container');
 
-            if (!viewer.classList.contains('active')) return;
+            if (!viewer || !viewer.classList.contains('active')) return;
 
             viewer.classList.remove('active');
             container.innerHTML = '';
