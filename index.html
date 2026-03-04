@@ -588,7 +588,12 @@
             </div>
             <div class="text-[10px] text-slate-400 leading-relaxed max-w-xs mx-auto">
                 &copy; 2026 Ayuntamiento de Gijón. <br>
-                Uso exclusivo para personal autorizado.
+                Uso exclusivo para personal autorizado. <br>
+                <button onclick="openAbout()"
+                    class="mt-2 text-navy/60 hover:text-navy font-bold flex items-center mx-auto space-x-1 transition-colors">
+                    <i data-lucide="info" class="w-3 h-3"></i>
+                    <span>Acerca de</span>
+                </button>
             </div>
         </footer>
     </div>
@@ -1327,6 +1332,52 @@
             if (!isPopState) {
                 history.back();
             }
+        }
+
+        function openAbout() {
+            const content = `
+                <div class="space-y-6 text-slate-700">
+                    <div class="flex flex-col items-center text-center space-y-4">
+                        <div class="w-20 h-20 bg-navy/5 rounded-3xl flex items-center justify-center border border-navy/10 shadow-inner">
+                            <i data-lucide="shield-check" class="w-10 h-10 text-navy"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-navy">Portal de la Policía Local</h3>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Gijón / Xixón</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-navy text-white rounded-lg">
+                                <i data-lucide="info" class="w-4 h-4"></i>
+                            </div>
+                            <span class="font-bold text-sm">Información del Portal</span>
+                        </div>
+                        <p class="text-sm leading-relaxed text-slate-600">
+                            Esta herramienta ha sido diseñada para facilitar el acceso rápido a notas, instrucciones y recursos operativos del personal de la Policía Local de Gijón. 
+                        </p>
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase">Versión</p>
+                                <p class="text-sm font-bold text-navy">v1.2.5 (Stable)</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase">Entorno</p>
+                                <p class="text-sm font-bold text-emerald-600">PWA / Operativo</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-[10px] text-center text-slate-400 px-4">
+                        Desarrollado para optimizar la gestión de información en servicio. <br>
+                        &copy; 2026 Ayuntamiento de Gijón.
+                    </div>
+                </div>
+            `;
+            openMediaViewer('', 'html', 'Información del Portal');
+            document.getElementById('viewer-container').innerHTML = content;
+            lucide.createIcons();
         }
 
         // ==========================================
