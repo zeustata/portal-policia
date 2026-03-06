@@ -792,8 +792,16 @@
         let molinonVehicles = [];
         let pendingVehicles = []; // Vehículos añadidos localmente aún no confirmados por el server
         let pendingStatusChanges = {}; // { id: status } Cambios de estado aún no confirmados
+
+        // Sistema de persistencia para borrados (Lista negra local)
+        let deletedVehicleIds = new Set(JSON.parse(localStorage.getItem('molinon_deleted_ids') || '[]'));
+
         let currentNewType = 'retirar';
         let isSyncing = false;
+
+        function saveDeletedIds() {
+            localStorage.setItem('molinon_deleted_ids', JSON.stringify(Array.from(deletedVehicleIds)));
+        }
 
         async function openMolinon() {
             // Actualizar fecha
@@ -827,6 +835,16 @@
                     // Limpiar pendientes que ya estén en la respuesta del servidor
                     const serverIds = validData.map(v => String(v.id || ''));
                     pendingVehicles = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
+
+                    // Limpiar lista negra: si un ID ya no viene del servidor, lo quitamos de la lista negra local
+                    let changed = false;
+                    deletedVehicleIds.forEach(id => {
+                        if (!serverIds.includes(String(id))) {
+                            deletedVehicleIds.delete(id);
+                            changed = true;
+                        }
+                    });
+                    if (changed) saveDeletedIds();
 
                     molinonVehicles = validData;
 
@@ -934,6 +952,7 @@
             const allItems = [...uniquePending, ...molinonVehicles];
 
             // Filtrar y limpiar: Solo objetos válidos con matrícula e ID
+            // Excluir los que están en la lista negra de borrados
             // Aplicar cambios de estado pendientes locales para evitar "parpadeo"
             // Ignoramos el servidor durante 15 segundos tras un cambio local
             const now = Date.now();
@@ -943,7 +962,7 @@
                     return { ...v, status: pending.status };
                 }
                 return v;
-            }).filter(v => v && v.plate && v.id);
+            }).filter(v => v && v.plate && v.id && !deletedVehicleIds.has(v.id) && !deletedVehicleIds.has(String(v.id)));
 
             if (search) {
                 filtered = filtered.filter(v =>
@@ -983,10 +1002,18 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="toggleVehicleStatus(${v.id})"
-                        class="p-3 rounded-xl ${v.status === 'completado' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'} transition-all active:scale-90">
-                        <i data-lucide="${v.status === 'completado' ? 'check-circle' : 'circle'}" class="w-6 h-6"></i>
-                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="removeMolinonVehicle(${v.id})"
+                            class="p-3 rounded-xl bg-red-50 text-red-400 hover:bg-red-100 transition-all active:scale-90"
+                            title="Eliminar matrícula">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="toggleVehicleStatus(${v.id})"
+                            class="p-3 rounded-xl ${v.status === 'completado' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'} transition-all active:scale-90"
+                            title="${v.status === 'completado' ? 'Desmarcar' : 'Marcar como completado'}">
+                            <i data-lucide="${v.status === 'completado' ? 'check-circle' : 'circle'}" class="w-6 h-6"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
 
@@ -994,8 +1021,10 @@
         }
 
         async function toggleVehicleStatus(id) {
-            const vehicle = molinonVehicles.find(v => v.id == id);
+            const vehicle = molinonVehicles.find(v => v.id == id) || pendingVehicles.find(v => v.id == id);
             if (!vehicle) return;
+
+            if (!confirm(`¿Estás seguro de que quieres marcar/desmarcar la matrícula ${vehicle.plate}?`)) return;
 
             try {
                 isSyncing = true;
@@ -1015,6 +1044,39 @@
                 setTimeout(fetchMolinonData, 500);
             } catch (err) {
                 console.error("Error al cambiar estado:", err);
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        async function removeMolinonVehicle(id) {
+            const vehicle = molinonVehicles.find(v => v.id == id) || pendingVehicles.find(v => v.id == id);
+            if (!vehicle) return;
+
+            if (!confirm(`¿Estás seguro de que quieres ELIMINAR la matrícula ${vehicle.plate} de la lista?`)) return;
+
+            try {
+                isSyncing = true;
+
+                // Eliminar localmente de inmediato y añadir a lista negra
+                deletedVehicleIds.add(id);
+                deletedVehicleIds.add(String(id));
+                saveDeletedIds();
+
+                molinonVehicles = molinonVehicles.filter(v => v.id != id);
+                pendingVehicles = pendingVehicles.filter(v => v.id != id);
+                renderMolinonList();
+
+                await fetch(MOLINON_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'delete', id: String(id) })
+                });
+
+                setTimeout(fetchMolinonData, 1000);
+            } catch (err) {
+                console.error("Error al eliminar vehículo:", err);
             } finally {
                 isSyncing = false;
             }
