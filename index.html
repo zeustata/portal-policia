@@ -356,6 +356,10 @@
         <!-- Tab Navigation -->
         <nav class="flex justify-start sm:justify-center border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
             <div class="flex space-x-1 px-2 sm:px-0 min-w-max mx-auto">
+                <button onclick="switchTab('tablon')" id="tab-tablon"
+                    class="tab-button hidden text-slate-400 font-semibold text-sm px-1 py-1">
+                    Tablón
+                </button>
                 <button onclick="switchTab('home')" id="tab-home"
                     class="tab-button active text-slate-400 font-semibold text-sm px-1 py-1">
                     Inicio
@@ -398,9 +402,9 @@
                             para el turno.
                         </p>
                     </div>
-                    <button onclick="openLatestContent()"
+                    <button onclick="switchTab('tablon')"
                         class="bg-navy text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all active:scale-95 text-sm">
-                        Últimas Notas e Instrucciones
+                        Tablón de Anuncios
                     </button>
                 </div>
 
@@ -420,6 +424,11 @@
                         <span class="text-xs font-bold text-slate-700">Utilidades</span>
                     </div>
                 </div>
+            </section>
+
+            <!-- Tab: Tablón de Anuncios -->
+            <section id="content-tablon" class="tab-content space-y-4">
+                <div id="tablon-list-container" class="space-y-4"></div>
             </section>
 
             <!-- Tab: Notas -->
@@ -633,6 +642,8 @@
                 renderUtilidadesList();
             } else if (tabId === 'molinon') {
                 renderMolinonList();
+            } else if (tabId === 'tablon') {
+                renderTablonList();
             }
         }
 
@@ -766,6 +777,30 @@
                 links: []
             }
         ];
+
+        // ==========================================
+        // DATOS DE TABLÓN DE ANUNCIOS
+        // ==========================================
+        const tablonData = [
+            {
+                id: 1,
+                date: "2026-03-06",
+                title: "Avisos Temporales",
+                subtitle: "Comunicaciones y Tablón de Anuncios",
+                icon: "megaphone",
+                active: true,
+                links: [
+                    { label: "Instrucción Vacaciones 2026", url: "Instruccion vacaciones 2026.pdf", type: "pdf", icon: "file-text", color: "blue" },
+                    { label: "Guía Vacaciones 2026", url: "Guia Vacaciones 2026.png", type: "img", icon: "image", color: "amber" }
+                ]
+            }
+        ];
+
+        function renderTablonList() {
+            const container = document.getElementById('tablon-list-container');
+            if (!container) return;
+            renderDynamicList(container, tablonData, true, true);
+        }
 
         // ==========================================
         // DATOS DE UTILIDADES
