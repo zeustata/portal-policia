@@ -15,6 +15,8 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
@@ -529,6 +531,11 @@
                                 title="Vaciar toda la lista">
                                 <i data-lucide="trash-2" class="w-5 h-5"></i>
                             </button>
+                            <button onclick="generateMolinonPDF()"
+                                class="p-3 rounded-2xl bg-blue-50 text-blue-500 hover:bg-blue-100 transition-all active:scale-90"
+                                title="Generar Informe PDF">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                            </button>
                             <button onclick="toggleMolinonForm()"
                                 class="bg-navy text-white p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-90"
                                 title="Añadir vehículo">
@@ -596,7 +603,6 @@
                 </a>
             </div>
             <div class="text-[10px] text-slate-400 leading-relaxed max-w-xs mx-auto">
-                &copy; 2026 Ayuntamiento de Gijón. <br>
                 Uso exclusivo para personal autorizado. <br>
                 <button onclick="openAbout()"
                     class="mt-2 text-navy/60 hover:text-navy font-bold flex items-center mx-auto space-x-1 transition-colors">
@@ -1142,6 +1148,101 @@
             }
         }
 
+        async function generateMolinonPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Títulos y Encabezado
+            doc.setFontSize(18);
+            doc.setTextColor(0, 43, 91); // Navy color del portal
+            doc.text("POLICÍA LOCAL DE GIJÓN", 105, 20, { align: "center" });
+
+            doc.setFontSize(14);
+            doc.setTextColor(100);
+            doc.text("Informe Control Estacionamientos Molinón", 105, 30, { align: "center" });
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            doc.setFontSize(10);
+            doc.text(`Fecha: ${dateStr}`, 105, 38, { align: "center" });
+
+            // Obtener todos los vehículos actuales (mismo filtro que en renderMolinonList)
+            const serverIds = molinonVehicles.map(v => String(v ? v.id : ''));
+            const uniquePending = pendingVehicles.filter(p => p && p.id && !serverIds.includes(String(p.id)));
+            const allItems = [...uniquePending, ...molinonVehicles];
+
+            const activeVehicles = allItems.filter(v => v && v.plate && v.id && !deletedVehicleIds.has(v.id) && !deletedVehicleIds.has(String(v.id)));
+
+            if (activeVehicles.length === 0) {
+                alert("No hay vehículos para generar el informe.");
+                return;
+            }
+
+            // Agrupar por zonas
+            const zones = [...new Set(activeVehicles.map(v => v.zone))].sort();
+
+            let currentY = 50;
+
+            zones.forEach((zone, index) => {
+                const zoneVehicles = activeVehicles.filter(v => v.zone === zone);
+
+                // Si no cabe en la página actual, nueva página
+                if (currentY > 240) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+
+                doc.setFontSize(12);
+                doc.setTextColor(0, 43, 91);
+                doc.text(`Zona: ${zone.toUpperCase()}`, 14, currentY);
+                currentY += 5;
+
+                const tableData = zoneVehicles.map(v => [
+                    v.plate,
+                    v.type === 'retirar' ? 'RETIRAR (Grúa)' : 'MOVER (Anterior)',
+                    v.status === 'completado' ? 'OK / COMPLETADO' : 'PENDIENTE'
+                ]);
+
+                doc.autoTable({
+                    startY: currentY,
+                    head: [['Matrícula', 'Acción Recomendada', 'Estado']],
+                    body: tableData,
+                    theme: 'grid',
+                    headStyles: { fillColor: [0, 43, 91], textColor: [255, 255, 255] },
+                    styles: { fontSize: 9 },
+                    didParseCell: function (data) {
+                        if (data.row.section === 'body' && data.column.index === 1) {
+                            const type = data.cell.raw;
+                            if (type.includes('RETIRAR')) {
+                                data.cell.styles.textColor = [185, 28, 28]; // Red
+                            } else {
+                                data.cell.styles.textColor = [29, 78, 216]; // Blue
+                            }
+                        }
+                        if (data.row.section === 'body' && data.column.index === 2) {
+                            if (data.cell.raw.includes('OK')) {
+                                data.cell.styles.textColor = [16, 185, 129]; // Emerald
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+                        }
+                    }
+                });
+
+                currentY = doc.lastAutoTable.finalY + 15;
+            });
+
+            // Pie de página con número de página
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text(`Página ${i} de ${pageCount} - Generado por Portal Policía Local Gijón`, 105, 285, { align: "center" });
+            }
+
+            doc.save(`Control_Molinon_${now.toISOString().split('T')[0]}.pdf`);
+        }
+
         // Evento búsqueda
         document.getElementById('molinon-search')?.addEventListener('input', renderMolinonList);
 
@@ -1459,7 +1560,7 @@
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Versión</p>
-                                <p class="text-sm font-bold text-navy">v0.6</p>
+                                <p class="text-sm font-bold text-navy">v0.62</p>
                             </div>
                             <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Entorno</p>
@@ -1469,8 +1570,7 @@
                     </div>
 
                     <div class="text-[10px] text-center text-slate-400 px-4">
-                        Desarrollado para optimizar la gestión de información en servicio. <br>
-                        &copy; 2026 Ayuntamiento de Gijón.
+                        Desarrollado para optimizar la gestión de información en servicio.
                     </div>
                 </div>
             `;
@@ -1486,7 +1586,7 @@
                         <div class="inline-flex p-3 bg-navy text-white rounded-2xl shadow-lg mb-2">
                             <i data-lucide="sparkles" class="w-8 h-8"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-navy">¡Novedades v0.6!</h3>
+                        <h3 class="text-2xl font-bold text-navy">¡Novedades v0.62!</h3>
                         <p class="text-slate-500 text-sm italic">Descubre las nuevas herramientas</p>
                     </div>
 
@@ -1512,12 +1612,12 @@
                         </div>
 
                         <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <div class="p-2 bg-orange-100 text-orange-600 rounded-xl mt-1">
-                                <i data-lucide="car" class="w-5 h-5"></i>
+                            <div class="p-2 bg-navy text-white rounded-xl mt-1">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Mejoras en Molinón</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Añadido borrado individual de matrículas y confirmaciones de seguridad.</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Informes PDF</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Añadida generación de informes automáticos en la herramienta Molinón con separación por zonas.</p>
                             </div>
                         </div>
                     </div>
@@ -1532,12 +1632,12 @@
             lucide.createIcons();
 
             // Marcar como vista
-            localStorage.setItem('portal_last_version_seen', '0.6');
+            localStorage.setItem('portal_last_version_seen', '0.62');
         }
 
         function checkChangelog() {
             const lastSeen = localStorage.getItem('portal_last_version_seen');
-            if (lastSeen !== '0.6') {
+            if (lastSeen !== '0.62') {
                 setTimeout(showChangelog, 1500); // Dar un margen para que cargue la interfaz
             }
         }
