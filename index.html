@@ -394,8 +394,19 @@
             <!-- Tab: Inicio -->
             <section id="content-home" class="tab-content active space-y-6">
                 <div class="glass p-8 rounded-3xl shadow-sm border border-slate-200 text-center space-y-4">
-                    <div class="w-16 h-16 bg-navy/5 rounded-2xl flex items-center justify-center mx-auto text-navy">
-                        <i data-lucide="layout-dashboard" class="w-8 h-8"></i>
+                    <div id="weather-widget" class="flex flex-col items-center justify-center mx-auto text-navy cursor-pointer hover:scale-105 transition-transform" title="El tiempo en Gijón" onclick="fetchWeather()">
+                        <div class="w-16 h-16 bg-navy/5 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-sm border border-slate-100/50">
+                            <div id="weather-loading" class="absolute inset-0 flex items-center justify-center bg-navy/5">
+                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-navy/50"></i>
+                            </div>
+                            <img id="weather-icon" class="w-12 h-12 hidden z-10 drop-shadow-sm" src="" alt="Tiempo">
+                        </div>
+                        <div class="mt-2 text-center opacity-0 transition-opacity duration-300" id="weather-info">
+                            <div class="font-bold text-lg text-slate-800 flex items-center justify-center">
+                                <span id="weather-temp">--</span>°C
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-medium uppercase tracking-wider" id="weather-desc">Cargando...</div>
+                        </div>
                     </div>
                     <div class="space-y-2">
                         <h2 class="text-xl font-bold text-slate-800">Bienvenido al Portal</h2>
@@ -1698,6 +1709,55 @@
                 setTimeout(() => { banner.style.display = 'none'; }, 300);
             });
         }
+
+        // ==========================================
+        // WIDGET DEL TIEMPO (OPENWEATHER)
+        // ==========================================
+        async function fetchWeather() {
+            const apiKey = '871d1fe40344e463a4becdaae5c29a85';
+            const city = 'Gijón,es';
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=es&appid=${apiKey}`;
+            
+            try {
+                document.getElementById('weather-loading').classList.remove('hidden');
+                document.getElementById('weather-icon').classList.add('hidden');
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Error en la petición del tiempo');
+                
+                const data = await response.json();
+                
+                const temp = Math.round(data.main.temp);
+                const desc = data.weather[0].description;
+                const iconCode = data.weather[0].icon;
+                
+                // Actualizar UI
+                document.getElementById('weather-temp').textContent = temp;
+                document.getElementById('weather-desc').textContent = desc;
+                
+                const iconImg = document.getElementById('weather-icon');
+                iconImg.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+                iconImg.onload = () => {
+                    document.getElementById('weather-loading').classList.add('hidden');
+                    iconImg.classList.remove('hidden');
+                };
+                
+                document.getElementById('weather-info').classList.remove('opacity-0');
+            } catch (error) {
+                console.error("No se pudo cargar el tiempo:", error);
+                document.getElementById('weather-loading').innerHTML = '<i data-lucide="cloud-off" class="w-6 h-6 text-slate-400"></i>';
+                document.getElementById('weather-desc').textContent = 'No dispo.';
+                document.getElementById('weather-info').classList.remove('opacity-0');
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+        
+        // Cargar tiempo al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchWeather();
+            // Actualizar cada 30 minutos
+            setInterval(fetchWeather, 30 * 60 * 1000);
+        });
     </script>
 </body>
 
