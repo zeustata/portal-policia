@@ -381,7 +381,7 @@
                 </button>
                 <button onclick="switchTab('notes')" id="tab-notes"
                     class="tab-button text-slate-400 font-semibold text-sm px-1 py-1">
-                    Notas
+                    Esquemas
                 </button>
                 <button onclick="switchTab('info')" id="tab-info"
                     class="tab-button text-slate-400 font-semibold text-sm px-1 py-1">
@@ -458,7 +458,7 @@
                 <div id="tablon-list-container" class="space-y-4"></div>
             </section>
 
-            <!-- Tab: Notas -->
+            <!-- Tab: Esquemas -->
             <section id="content-notes" class="tab-content space-y-4">
                 <div id="instructions-container" class="space-y-4"></div>
             </section>
@@ -684,26 +684,14 @@
         const instructionsData = [
             {
                 id: 1,
-                date: "2026-01-28",
-                title: "Nota Informativa 28/01/2026",
-                subtitle: "Protocolos y Licencias Instruccion 2/2025",
-                icon: "book-open",
+                date: "2026-04-27",
+                title: "Perros potencialmente peligrosos",
+                subtitle: "Normativa y procedimientos",
+                icon: "paw-print",
                 active: false,
                 links: [
-                    { label: "Instrucción (PDF)", url: "nota informativa permisos.pdf", type: "pdf", icon: "file-text", color: "red" },
-                    { label: "Presentación", url: "Permisos_Policía_Local_Flujo_Doble_Vía.pdf", type: "pdf", icon: "presentation", color: "blue" },
-                    { label: "Infografía", url: "notaInformativa.png", type: "img", icon: "layout", color: "amber" },
-                    { label: "Vídeo", url: "Permisos.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                    { label: "Esquema (PNG)", url: "perros_peligrosos.png", type: "img", icon: "image", color: "amber" }
                 ]
-            },
-            {
-                id: 2,
-                date: "2026-02-21",
-                title: "Notas 02",
-                subtitle: "Próximamente disponible",
-                icon: "lock",
-                active: false,
-                links: []
             }
         ];
 
@@ -834,11 +822,25 @@
         const tablonData = [
             {
                 id: 1,
+                date: "2026-01-28",
+                title: "Nota Informativa 28/01/2026",
+                subtitle: "Protocolos y Licencias Instruccion 2/2025",
+                icon: "book-open",
+                active: false,
+                links: [
+                    { label: "Instrucción (PDF)", url: "nota informativa permisos.pdf", type: "pdf", icon: "file-text", color: "red" },
+                    { label: "Presentación", url: "Permisos_Policía_Local_Flujo_Doble_Vía.pdf", type: "pdf", icon: "presentation", color: "blue" },
+                    { label: "Infografía", url: "notaInformativa.png", type: "img", icon: "layout", color: "amber" },
+                    { label: "Vídeo", url: "Permisos.mp4", type: "video", icon: "play-circle", color: "indigo" }
+                ]
+            },
+            {
+                id: 2,
                 date: "2026-03-06",
                 title: "Avisos Temporales",
                 subtitle: "Comunicaciones y Tablón de Anuncios",
                 icon: "megaphone",
-                active: true,
+                active: false,
                 links: [
                     { label: "Instrucción Vacaciones 2026", url: "Instruccion vacaciones 2026.pdf", type: "pdf", icon: "file-text", color: "blue" },
                     { label: "Guía Vacaciones 2026", url: "Guia Vacaciones 2026.png", type: "img", icon: "image", color: "amber" }
