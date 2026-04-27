@@ -1626,7 +1626,7 @@
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Versión</p>
-                                <p class="text-sm font-bold text-navy">v0.80</p>
+                                <p class="text-sm font-bold text-navy">v0.81</p>
                             </div>
                             <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Entorno</p>
@@ -1652,38 +1652,28 @@
                         <div class="inline-flex p-3 bg-navy text-white rounded-2xl shadow-lg mb-2">
                             <i data-lucide="sparkles" class="w-8 h-8"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-navy">¡Novedades v0.80!</h3>
-                        <p class="text-slate-500 text-sm italic">Descubre las nuevas mejoras visuales</p>
+                        <h3 class="text-2xl font-bold text-navy">¡Novedades v0.81!</h3>
+                        <p class="text-slate-500 text-sm italic">Mejoras en Esquemas y accesibilidad</p>
                     </div>
 
                     <div class="space-y-4">
                         <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <div class="p-2 bg-purple-100 text-purple-600 rounded-xl mt-1">
-                                <i data-lucide="palette" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Pintura Nueva y Efecto Cristal</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Rediseño Premium visual completo de la interfaz con efecto Glassmorphism, paneles translúcidos flotantes y diseño de fondo atmosférico.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                             <div class="p-2 bg-blue-100 text-blue-600 rounded-xl mt-1">
-                                <i data-lucide="cloud-sun" class="w-5 h-5"></i>
+                                <i data-lucide="smartphone" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Widget del Tiempo</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Nuevo widget con el tiempo meteorológico dinámico en la portada (sustituyendo el escudo estático).</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Nuevos Formatos en Esquemas</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Ahora las tarjetas como "Perros Potencialmente Peligrosos" incluyen botones independientes para descargar el esquema en formato Horizontal (PC) o Vertical (Móvil).</p>
                             </div>
                         </div>
 
                         <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                             <div class="p-2 bg-emerald-100 text-emerald-600 rounded-xl mt-1">
-                                <i data-lucide="car-front" class="w-5 h-5"></i>
+                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Autocaravanas</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Añadida la instrucción PROT 2026/04 y recursos relacionados sobre legislación de autocaravanas en Inst.DGT.</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Sincronización del Tablón</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Actualizada la información del Tablón de Anuncios y migrados los datos al entorno de producción principal.</p>
                             </div>
                         </div>
                     </div>
@@ -1693,17 +1683,17 @@
                     </button>
                 </div>
             `;
-            openMediaViewer('', 'html', 'Actualización v0.63');
+            openMediaViewer('', 'html', 'Actualización v0.81');
             document.getElementById('viewer-container').innerHTML = content;
             lucide.createIcons();
 
             // Marcar como vista
-            localStorage.setItem('portal_last_version_seen', '0.80');
+            localStorage.setItem('portal_last_version_seen', '0.81');
         }
 
         function checkChangelog() {
             const lastSeen = localStorage.getItem('portal_last_version_seen');
-            if (lastSeen !== '0.80') {
+            if (lastSeen !== '0.81') {
                 setTimeout(showChangelog, 1500); // Dar un margen para que cargue la interfaz
             }
         }
