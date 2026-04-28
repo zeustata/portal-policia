@@ -2016,6 +2016,9 @@
             const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             const diasSemana = ["L", "M", "X", "J", "V", "S", "D"];
 
+            // Contadores anuales
+            let totalM = 0, totalT = 0, totalN = 0, totalL = 0, totalF = 0, totalS = 0;
+
             // Fondo sutil para el encabezado principal
             doc.setFillColor(0, 43, 91);
             doc.rect(0, 0, 210, 22, 'F');
@@ -2034,9 +2037,9 @@
             const marginX = 8;
             const marginY = 28;
             const gapX = 4;
-            const gapY = 10;
+            const gapY = 8; // Reducido un poco para ganar espacio abajo
             const colWidth = (210 - (marginX * 2) - (gapX * 2)) / 3;
-            const rowHeight = (297 - marginY - 15 - (gapY * 3)) / 4;
+            const rowHeight = (297 - marginY - 35 - (gapY * 3)) / 4; // Ajustado para dejar hueco al resumen
 
             for (let m = 0; m < 12; m++) {
                 const col = m % 3;
@@ -2050,7 +2053,7 @@
                 doc.roundedRect(startX, startY - 7, colWidth, 7, 1, 1, 'F');
                 
                 // Nombre del mes
-                doc.setFontSize(10);
+                doc.setFontSize(9);
                 doc.setTextColor(0, 43, 91);
                 doc.setFont(undefined, 'bold');
                 doc.text(meses[m].toUpperCase(), startX + (colWidth / 2), startY - 2, { align: 'center' });
@@ -2068,7 +2071,24 @@
                     for (let i = (tableData.length === 0 ? startCol : 0); i < 7 && currentDay <= lastDay.getDate(); i++) {
                         const date = new Date(ano, m, currentDay);
                         const turno = getTurno(date, grupo);
-                        rowData[i] = { content: currentDay, turno: turno };
+                        const isFestivoDia = date.getDay() === 0 || esFestivo(date);
+                        const isSabado = date.getDay() === 6;
+
+                        // Contabilizar
+                        if (turno === 'M') {
+                            totalM++;
+                            if (isFestivoDia) totalF++; else if (isSabado) totalS++;
+                        } else if (turno === 'T') {
+                            totalT++;
+                            if (isFestivoDia) totalF++; else if (isSabado) totalS++;
+                        } else if (turno === 'N') {
+                            totalN++;
+                            if (isFestivoDia) totalF++; else if (isSabado) totalS++;
+                        } else if (turno === 'L') {
+                            totalL++;
+                        }
+
+                        rowData[i] = { content: currentDay, turno: turno, isFestivo: isFestivoDia, isSabado: isSabado };
                         currentDay++;
                     }
                     tableData.push(rowData);
@@ -2080,34 +2100,48 @@
                     body: tableData,
                     theme: 'grid',
                     styles: { 
-                        fontSize: 7, 
+                        fontSize: 6.5, 
                         halign: 'center', 
-                        cellPadding: 0.8,
-                        lineColor: [200, 200, 200],
+                        cellPadding: 0.6,
+                        lineColor: [220, 220, 220],
                         lineWidth: 0.1,
-                        textColor: [50, 50, 50]
+                        textColor: [60, 60, 60]
                     },
                     headStyles: { 
                         fillColor: [255, 255, 255], 
                         textColor: [0, 43, 91],
-                        fontSize: 6,
-                        cellPadding: 0.4,
+                        fontSize: 5.5,
+                        cellPadding: 0.3,
                         fontStyle: 'bold',
                         lineWidth: 0.1
                     },
                     margin: { left: startX },
                     tableWidth: colWidth,
                     didParseCell: function(data) {
-                        if (data.row.section === 'body' && data.cell.raw && data.cell.raw.turno) {
-                            const t = data.cell.raw.turno;
-                            data.cell.text = String(data.cell.raw.content);
-                            if (t === 'M') {
-                                data.cell.styles.fillColor = [59, 130, 246]; // Azul vibrante
+                        if (data.row.section === 'body' && data.cell.raw && data.cell.raw.content) {
+                            const raw = data.cell.raw;
+                            data.cell.text = String(raw.content);
+                            
+                            if (raw.turno === 'M') {
+                                data.cell.styles.fillColor = [59, 130, 246]; // Azul
                                 data.cell.styles.textColor = [255, 255, 255];
                                 data.cell.styles.fontStyle = 'bold';
-                            } else if (t === 'T') {
-                                data.cell.styles.fillColor = [16, 185, 129]; // Verde vibrante
+                            } else if (raw.turno === 'T') {
+                                data.cell.styles.fillColor = [16, 185, 129]; // Verde
                                 data.cell.styles.textColor = [255, 255, 255];
+                                data.cell.styles.fontStyle = 'bold';
+                            } else if (raw.turno === 'N') {
+                                data.cell.styles.fillColor = [79, 70, 229]; // Indigo
+                                data.cell.styles.textColor = [255, 255, 255];
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+
+                            // Prioridad de color para festivos y sábados (mismo criterio que en la web)
+                            if (raw.isFestivo) {
+                                data.cell.styles.textColor = [220, 38, 38]; // Rojo intenso
+                                data.cell.styles.fontStyle = 'bold';
+                            } else if (raw.isSabado) {
+                                data.cell.styles.textColor = [147, 51, 234]; // Púrpura intenso
                                 data.cell.styles.fontStyle = 'bold';
                             }
                         }
@@ -2115,27 +2149,45 @@
                 });
             }
 
-            // Pequeña leyenda al pie
-            const footerY = 288;
+            // --- SECCIÓN DE RESUMEN AL PIE ---
+            const summaryY = 272;
+            
+            // Fondo para el área de resumen
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(marginX, summaryY, 194, 20, 2, 2, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.roundedRect(marginX, summaryY, 194, 20, 2, 2, 'S');
+
             doc.setFontSize(8);
             doc.setTextColor(0, 43, 91);
             doc.setFont(undefined, 'bold');
-            
-            // Cuadraditos de leyenda
-            doc.setFillColor(59, 130, 246);
-            doc.rect(65, footerY - 3, 4, 4, 'F');
-            doc.setFont(undefined, 'normal');
-            doc.text("Mañana", 71, footerY);
-            
-            doc.setFillColor(16, 185, 129);
-            doc.rect(100, footerY - 3, 4, 4, 'F');
-            doc.text("Tarde", 106, footerY);
-            
-            doc.setDrawColor(200);
-            doc.rect(130, footerY - 3, 4, 4, 'S');
-            doc.text("Libre", 136, footerY);
+            doc.text("CÓMPUTO ANUAL DE JORNADA", marginX + 5, summaryY + 6);
 
-            doc.save(`Cuadrante_${grupo}_${ano}.pdf`);
+            // Grid de datos en el resumen
+            doc.setFontSize(7);
+            doc.setFont(undefined, 'normal');
+            
+            const col1 = marginX + 5;
+            const col2 = marginX + 70;
+            const col3 = marginX + 135;
+
+            doc.text(`Mañanas: ${totalM}`, col1, summaryY + 12);
+            doc.text(`Tardes (Media Noct.): ${totalT}`, col1, summaryY + 16);
+            
+            doc.text(`Noches (Nocturnidad): ${totalN}`, col2, summaryY + 12);
+            doc.text(`Días Libres: ${totalL}`, col2, summaryY + 16);
+            
+            doc.setTextColor(220, 38, 38); // Rojo para festivos
+            doc.text(`Festivos/Dom Trabajados: ${totalF}`, col3, summaryY + 12);
+            doc.setTextColor(147, 51, 234); // Púrpura para sábados
+            doc.text(`Sábados Trabajados: ${totalS}`, col3, summaryY + 16);
+
+            // Leyenda simplificada al lado del resumen o debajo
+            doc.setFontSize(6);
+            doc.setTextColor(100, 116, 139);
+            doc.text("* Festivos y Sábados solo se computan si coinciden con jornada laboral (M, T o N).", marginX, summaryY + 23);
+
+            doc.save(`Cuadrante_Anual_${grupo}_${ano}.pdf`);
         }
 
         function renderizarCalendario() {
