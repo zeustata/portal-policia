@@ -817,6 +817,19 @@
             {
                 id: 2,
                 date: "2026-04-28",
+                title: "Calendario de Turnos",
+                subtitle: "Planificación anual de grupos",
+                icon: "calendar-days",
+                active: false,
+                links: [
+                    { label: "Turno AN Tráfico", url: "javascript:abrirCalendarioTurnos('AN_TRAFICO')", type: "js", icon: "motorcycle", color: "blue" },
+                    { label: "Turno BN Tráfico", url: "javascript:abrirCalendarioTurnos('BN_TRAFICO')", type: "js", icon: "motorcycle", color: "indigo" },
+                    { label: "Turno 092 Próximamente", url: "#", type: "html", icon: "lock", color: "slate" }
+                ]
+            },
+            {
+                id: 3,
+                date: "2026-04-28",
                 title: "Ordenanzas Municipales",
                 subtitle: "Ayuntamiento de Gijón",
                 icon: "library",
@@ -1416,7 +1429,7 @@
                                     </button>
                                     `}
                                     ${showDownload && link.type !== 'external' && link.type !== 'tool' ? `
-                                    <button onclick="downloadFile('${link.url}', '${inst.title} - ${link.label}')" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
+                                    <button onclick="downloadFile('${link.url.replace(/'/g, "\\'")}', '${(inst.title + ' - ' + link.label).replace(/'/g, "\\'")}')" class="action-button p-3.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-navy hover:text-white transition-all shadow-sm" title="Descargar">
                                         <i data-lucide="download" class="w-5 h-5"></i>
                                     </button>
                                     ` : ''}
@@ -1446,6 +1459,15 @@
         }
 
         async function downloadFile(url, filename) {
+            // Interceptor para calendarios de turnos
+            if (url && url.includes('abrirCalendarioTurnos')) {
+                const match = url.match(/'([^']+)'/);
+                if (match) {
+                    generarPDFCuadranteAnual(match[1]);
+                    return;
+                }
+            }
+
             try {
                 const response = await fetch(url);
                 const blob = await response.blob();
@@ -1820,6 +1842,380 @@
             // Actualizar cada 30 minutos
             setInterval(fetchWeather, 30 * 60 * 1000);
         });
+        // ==========================================
+        // CALCULADORA DE TURNOS
+        // ==========================================
+        
+        // Fechas Ancla (Día 0 = Primer día de Mañanas del ciclo de 24 días)
+        const TURNOS_ANCHOR = {
+            'AN_TRAFICO': '2026-05-07', // El 7 de Mayo de 2026 entra de Mañanas (Día 0)
+            'BN_TRAFICO': '2026-04-25'  // 12 días de desfase respecto a AN (Entra de Mañanas cuando AN entra de Tardes)
+        };
+
+        let currentCalMonth = new Date().getMonth();
+        let currentCalYear = new Date().getFullYear();
+        let currentCalGrupo = '';
+
+        function getTurno(fecha, grupo) {
+            const anchorStr = TURNOS_ANCHOR[grupo];
+            if (!anchorStr) return null;
+            
+            // Trabajamos con UTC o fechas locales "limpias" al mediodía para evitar cambios de hora (DST)
+            const targetDate = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), 12, 0, 0);
+            const anchorParts = anchorStr.split('-');
+            const anchorDate = new Date(parseInt(anchorParts[0]), parseInt(anchorParts[1]) - 1, parseInt(anchorParts[2]), 12, 0, 0);
+            
+            const diffMs = targetDate.getTime() - anchorDate.getTime();
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+            
+            const cycleDay = ((diffDays % 24) + 24) % 24;
+            
+            if (cycleDay >= 0 && cycleDay <= 5) return 'M'; // 0-5 Mañanas
+            if (cycleDay >= 6 && cycleDay <= 11) return 'L'; // 6-11 Libres
+            if (cycleDay >= 12 && cycleDay <= 17) return 'T'; // 12-17 Tardes
+            if (cycleDay >= 18 && cycleDay <= 23) return 'L'; // 18-23 Libres
+            
+            return null;
+        }
+
+        function abrirCalendarioTurnos(grupo) {
+            currentCalGrupo = grupo;
+            currentCalMonth = new Date().getMonth();
+            currentCalYear = new Date().getFullYear();
+            renderizarCalendario();
+        }
+
+        function cambiarMesCalendario(delta) {
+            currentCalMonth += delta;
+            if (currentCalMonth > 11) {
+                currentCalMonth = 0;
+                currentCalYear++;
+            } else if (currentCalMonth < 0) {
+                currentCalMonth = 11;
+                currentCalYear--;
+            }
+            renderizarCalendario();
+        }
+
+        function saltarMesCalendarioSelect() {
+            const mesStr = document.getElementById('calMonthSelect').value;
+            const anoStr = document.getElementById('calYearSelect').value;
+            if (mesStr && anoStr) {
+                currentCalMonth = parseInt(mesStr);
+                currentCalYear = parseInt(anoStr);
+                renderizarCalendario();
+            }
+        }
+
+        async function generarPDFCuadranteAnual(grupo) {
+            if (!window.jspdf) {
+                alert("La librería PDF no está cargada. Por favor, comprueba tu conexión.");
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const hoy = new Date();
+            const anioPrompt = prompt("¿De qué año quieres generar el cuadrante?", hoy.getFullYear());
+            if (!anioPrompt) return;
+            const ano = parseInt(anioPrompt);
+            if (isNaN(ano)) return;
+
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const diasSemana = ["L", "M", "X", "J", "V", "S", "D"];
+
+            // Fondo sutil para el encabezado principal
+            doc.setFillColor(0, 43, 91);
+            doc.rect(0, 0, 210, 22, 'F');
+
+            // Título Principal Blanco
+            doc.setFontSize(18);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont(undefined, 'bold');
+            doc.text(`CUADRANTE ANUAL ${ano}`, 105, 12, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`POLICÍA LOCAL DE GIJÓN  |  Turno: ${grupo.replace('_', ' ')}`, 105, 18, { align: 'center' });
+
+            // Configuración de la rejilla (3 columnas x 4 filas) optimizada
+            const marginX = 8;
+            const marginY = 28;
+            const gapX = 4;
+            const gapY = 10;
+            const colWidth = (210 - (marginX * 2) - (gapX * 2)) / 3;
+            const rowHeight = (297 - marginY - 15 - (gapY * 3)) / 4;
+
+            for (let m = 0; m < 12; m++) {
+                const col = m % 3;
+                const row = Math.floor(m / 3);
+                
+                const startX = marginX + (col * (colWidth + gapX));
+                const startY = marginY + (row * (rowHeight + gapY));
+
+                // Fondo para la cabecera del mes
+                doc.setFillColor(240, 245, 250);
+                doc.roundedRect(startX, startY - 7, colWidth, 7, 1, 1, 'F');
+                
+                // Nombre del mes
+                doc.setFontSize(10);
+                doc.setTextColor(0, 43, 91);
+                doc.setFont(undefined, 'bold');
+                doc.text(meses[m].toUpperCase(), startX + (colWidth / 2), startY - 2, { align: 'center' });
+                
+                const tableData = [];
+                const firstDay = new Date(ano, m, 1);
+                const lastDay = new Date(ano, m + 1, 0);
+                
+                let startCol = firstDay.getDay(); 
+                if (startCol === 0) startCol = 6; else startCol--; 
+
+                let currentDay = 1;
+                while (currentDay <= lastDay.getDate()) {
+                    let rowData = new Array(7).fill('');
+                    for (let i = (tableData.length === 0 ? startCol : 0); i < 7 && currentDay <= lastDay.getDate(); i++) {
+                        const date = new Date(ano, m, currentDay);
+                        const turno = getTurno(date, grupo);
+                        rowData[i] = { content: currentDay, turno: turno };
+                        currentDay++;
+                    }
+                    tableData.push(rowData);
+                }
+
+                doc.autoTable({
+                    startY: startY,
+                    head: [diasSemana],
+                    body: tableData,
+                    theme: 'grid',
+                    styles: { 
+                        fontSize: 7, 
+                        halign: 'center', 
+                        cellPadding: 0.8,
+                        lineColor: [200, 200, 200],
+                        lineWidth: 0.1,
+                        textColor: [50, 50, 50]
+                    },
+                    headStyles: { 
+                        fillColor: [255, 255, 255], 
+                        textColor: [0, 43, 91],
+                        fontSize: 6,
+                        cellPadding: 0.4,
+                        fontStyle: 'bold',
+                        lineWidth: 0.1
+                    },
+                    margin: { left: startX },
+                    tableWidth: colWidth,
+                    didParseCell: function(data) {
+                        if (data.row.section === 'body' && data.cell.raw && data.cell.raw.turno) {
+                            const t = data.cell.raw.turno;
+                            data.cell.text = String(data.cell.raw.content);
+                            if (t === 'M') {
+                                data.cell.styles.fillColor = [59, 130, 246]; // Azul vibrante
+                                data.cell.styles.textColor = [255, 255, 255];
+                                data.cell.styles.fontStyle = 'bold';
+                            } else if (t === 'T') {
+                                data.cell.styles.fillColor = [16, 185, 129]; // Verde vibrante
+                                data.cell.styles.textColor = [255, 255, 255];
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Pequeña leyenda al pie
+            const footerY = 288;
+            doc.setFontSize(8);
+            doc.setTextColor(0, 43, 91);
+            doc.setFont(undefined, 'bold');
+            
+            // Cuadraditos de leyenda
+            doc.setFillColor(59, 130, 246);
+            doc.rect(65, footerY - 3, 4, 4, 'F');
+            doc.setFont(undefined, 'normal');
+            doc.text("Mañana", 71, footerY);
+            
+            doc.setFillColor(16, 185, 129);
+            doc.rect(100, footerY - 3, 4, 4, 'F');
+            doc.text("Tarde", 106, footerY);
+            
+            doc.setDrawColor(200);
+            doc.rect(130, footerY - 3, 4, 4, 'S');
+            doc.text("Libre", 136, footerY);
+
+            doc.save(`Cuadrante_${grupo}_${ano}.pdf`);
+        }
+
+        function renderizarCalendario() {
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            
+            const firstDay = new Date(currentCalYear, currentCalMonth, 1);
+            const lastDay = new Date(currentCalYear, currentCalMonth + 1, 0);
+            
+            // L es 1, M es 2, etc. (getDay: 0=Dom, 1=Lun)
+            let startingDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+            
+            // Generar opciones de años (desde el año actual -2 hasta +10)
+            const yearOptions = [];
+            const baseYear = new Date().getFullYear();
+            for(let y = baseYear - 2; y <= baseYear + 10; y++) {
+                yearOptions.push(`<option value="${y}" ${y === currentCalYear ? 'selected' : ''}>${y}</option>`);
+            }
+            
+            let html = `
+                <div class="space-y-6 max-w-sm mx-auto pb-6">
+                    <!-- Controles Superiores Premium -->
+                    <div class="flex items-center justify-between px-1">
+                        <button onclick="cambiarMesCalendario(-1)" class="p-3 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 text-slate-500 hover:text-navy hover:bg-white active:scale-95 transition-all">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <div class="flex flex-col items-center">
+                            <p class="text-[9px] font-black tracking-[0.2em] text-navy/40 uppercase mb-2">${currentCalGrupo.replace('_', ' ')}</p>
+                            <div class="flex items-center bg-white/50 backdrop-blur-md rounded-2xl shadow-inner border border-white/60 p-1">
+                                <div class="relative">
+                                    <select id="calMonthSelect" onchange="saltarMesCalendarioSelect()" class="appearance-none bg-transparent hover:bg-white/50 text-slate-800 font-black tracking-tight py-1.5 pl-4 pr-7 rounded-xl outline-none cursor-pointer transition-colors text-base">
+                                        ${monthNames.map((m, i) => `<option value="${i}" ${i === currentCalMonth ? 'selected' : ''}>${m}</option>`).join('')}
+                                    </select>
+                                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                </div>
+                                <div class="w-px h-5 bg-slate-200/50 mx-1"></div>
+                                <div class="relative">
+                                    <select id="calYearSelect" onchange="saltarMesCalendarioSelect()" class="appearance-none bg-transparent hover:bg-white/50 text-slate-800 font-black tracking-tight py-1.5 pl-3 pr-7 rounded-xl outline-none cursor-pointer transition-colors text-base">
+                                        ${yearOptions.join('')}
+                                    </select>
+                                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="cambiarMesCalendario(1)" class="p-3 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 text-slate-500 hover:text-navy hover:bg-white active:scale-95 transition-all">
+                            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Calendario Grid Estilo Apple Widget -->
+                    <div class="bg-gradient-to-br from-white/70 to-white/40 backdrop-blur-2xl p-5 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/80 ring-1 ring-slate-100/50 relative overflow-hidden">
+                        <!-- Decoración de fondo suave (Glows) -->
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+                        
+                        <div class="grid grid-cols-7 text-center mb-4 relative z-10">
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">LUN</div>
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">MAR</div>
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">MIE</div>
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">JUE</div>
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">VIE</div>
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">SAB</div>
+                            <div class="text-[9px] font-black text-slate-400 tracking-widest">DOM</div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-2 text-center relative z-10">
+            `;
+            
+            // Espacios en blanco principio de mes
+            for (let i = 0; i < startingDay; i++) {
+                html += `<div class="aspect-square rounded-2xl bg-transparent"></div>`;
+            }
+            
+            const today = new Date();
+            
+            // Días del mes
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const currentDate = new Date(currentCalYear, currentCalMonth, i);
+                const turno = getTurno(currentDate, currentCalGrupo);
+                
+                let bgColor = "bg-transparent";
+                let textColor = "text-slate-500";
+                let turnoLabel = "";
+                let borderStyles = "";
+                
+                if (turno === 'M') { 
+                    bgColor = "bg-gradient-to-b from-blue-400 to-blue-600 shadow-md shadow-blue-500/20"; 
+                    textColor = "text-white"; 
+                    turnoLabel = "M"; 
+                    borderStyles = "border border-blue-400/50";
+                }
+                if (turno === 'T') { 
+                    bgColor = "bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-md shadow-emerald-500/20"; 
+                    textColor = "text-white"; 
+                    turnoLabel = "T"; 
+                    borderStyles = "border border-emerald-400/50";
+                }
+                if (turno === 'L') { 
+                    bgColor = "bg-white shadow-sm"; 
+                    textColor = "text-slate-600"; 
+                    turnoLabel = "L"; 
+                    borderStyles = "border border-slate-100";
+                }
+                
+                const isToday = currentDate.getDate() === today.getDate() && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
+                
+                const todayRing = isToday ? "ring-[3px] ring-amber-400 ring-offset-2 ring-offset-transparent scale-110 z-20 font-black shadow-lg" : "hover:scale-105";
+                const todayText = isToday ? "font-black" : "font-bold";
+                
+                html += `
+                    <div class="aspect-square rounded-[1.1rem] flex flex-col items-center justify-center relative transition-all duration-300 ${bgColor} ${borderStyles} ${todayRing}">
+                        <span class="text-[14px] ${textColor} ${todayText} leading-none mt-1">${i}</span>
+                        ${turnoLabel ? `<span class="text-[8px] font-black ${textColor} mt-1 opacity-80 tracking-widest">${turnoLabel}</span>` : ''}
+                    </div>
+                `;
+            }
+            
+            html += `
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between bg-white/40 backdrop-blur-md p-1.5 rounded-full border border-white/60 shadow-sm">
+                        <button onclick="cambiarMesCalendario(-1)" class="p-2 bg-white/60 text-navy rounded-full hover:bg-white transition-all shadow-sm">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        
+                        <div class="flex items-center space-x-1">
+                            <select id="calMonthSelect" onchange="saltarMesCalendarioSelect()" class="bg-transparent border-none text-[11px] font-black text-navy uppercase tracking-tighter focus:ring-0 cursor-pointer appearance-none px-1">
+                                ${Array.from({ length: 12 }, (_, i) => `<option value="${i}" ${i === currentCalMonth ? 'selected' : ''}>${new Date(0, i).toLocaleString('es', { month: 'short' })}</option>`).join('')}
+                            </select>
+                            <span class="text-navy/20 font-light">|</span>
+                            <select id="calYearSelect" onchange="saltarMesCalendarioSelect()" class="bg-transparent border-none text-[11px] font-black text-navy tracking-tighter focus:ring-0 cursor-pointer appearance-none px-1">
+                                ${Array.from({ length: 10 }, (_, i) => `<option value="${new Date().getFullYear() - 2 + i}" ${(new Date().getFullYear() - 2 + i) === currentCalYear ? 'selected' : ''}>${new Date().getFullYear() - 2 + i}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center space-x-1">
+                            <button onclick="generarPDFCuadranteAnual('${currentCalGrupo}')" class="p-2 bg-white/60 text-navy rounded-full hover:bg-white transition-all shadow-sm" title="Descargar PDF Anual">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="cambiarMesCalendario(1)" class="p-2 bg-white/60 text-navy rounded-full hover:bg-white transition-all shadow-sm">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center gap-6 pt-2">
+                        <div class="flex flex-col items-center gap-1.5 group">
+                            <div class="w-8 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm shadow-blue-500/30"></div>
+                            <span class="text-[9px] font-black text-slate-400 tracking-widest uppercase group-hover:text-blue-500 transition-colors">Mañana</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 group">
+                            <div class="w-8 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-sm shadow-emerald-500/30"></div>
+                            <span class="text-[9px] font-black text-slate-400 tracking-widest uppercase group-hover:text-emerald-500 transition-colors">Tarde</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 group">
+                            <div class="w-8 h-1.5 rounded-full bg-white border border-slate-200 shadow-sm"></div>
+                            <span class="text-[9px] font-black text-slate-400 tracking-widest uppercase group-hover:text-slate-500 transition-colors">Libre</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Usamos openMediaViewer si no está abierto
+            const viewer = document.getElementById('media-viewer');
+            if (!viewer.classList.contains('active')) {
+                openMediaViewer('', 'html', 'Calendario');
+            }
+            document.getElementById('viewer-title').innerText = `Tu Calendario`;
+            document.getElementById('viewer-container').innerHTML = html;
+            if (window.lucide) lucide.createIcons();
+        }
     </script>
 </body>
 
