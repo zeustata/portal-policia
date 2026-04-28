@@ -816,12 +816,19 @@
             },
             {
                 id: 2,
-                date: "2024-01-01",
+                date: "2026-04-28",
                 title: "Ordenanzas Municipales",
                 subtitle: "Ayuntamiento de Gijón",
                 icon: "library",
                 active: false,
-                links: []
+                links: [
+                    { label: "Convivencia Ciudadana", subtitle: "Prevención de actuaciones antisociales", url: "ordenanza_convivencia.pdf", type: "pdf", icon: "users", color: "blue" },
+                    { label: "Movilidad Sostenible", subtitle: "<span class='text-red-500 font-black'>¡ANULADA TSJA!</span> Texto como referencia", url: "ordenanza_movilidad.pdf", type: "pdf", icon: "alert-triangle", color: "red" },
+                    { label: "Protección de Animales", subtitle: "<span class='text-red-500 font-bold'>Aplicar junto a Ley Nac. 7/2023</span>", url: "ordenanza_animales.pdf", type: "pdf", icon: "paw-print", color: "amber" },
+                    { label: "Terrazas de Hostelería", subtitle: "<span class='text-red-500 font-bold'>En proceso de revisión</span>", url: "ordenanza_terrazas.pdf", type: "pdf", icon: "coffee", color: "amber" },
+                    { label: "Limpieza y Residuos", subtitle: "Gestión de residuos urbanos", url: "ordenanza_limpieza.pdf", type: "pdf", icon: "trash-2", color: "blue" },
+                    { label: "Medio Ambiente (Ruidos)", subtitle: "Contaminación acústica", url: "ordenanza_ruidos.pdf", type: "pdf", icon: "volume-2", color: "blue" }
+                ]
             }
         ];
 
@@ -1652,48 +1659,63 @@
                         <div class="inline-flex p-3 bg-navy text-white rounded-2xl shadow-lg mb-2">
                             <i data-lucide="sparkles" class="w-8 h-8"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-navy">¡Novedades v0.81!</h3>
-                        <p class="text-slate-500 text-sm italic">Mejoras en Esquemas y accesibilidad</p>
+                        <h3 class="text-2xl font-bold text-navy">¡Novedades v0.82!</h3>
+                        <p class="text-slate-500 text-sm italic">Ordenanzas locales y avisos legales</p>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <!-- Novedades v0.82 -->
+                        <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-blue-200 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg">NUEVO</div>
                             <div class="p-2 bg-blue-100 text-blue-600 rounded-xl mt-1">
-                                <i data-lucide="smartphone" class="w-5 h-5"></i>
+                                <i data-lucide="library" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Nuevos Formatos en Esquemas</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Ahora las tarjetas como "Perros Potencialmente Peligrosos" incluyen botones independientes para descargar el esquema en formato Horizontal (PC) o Vertical (Móvil).</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Ordenanzas Municipales Locales</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Añadida la nueva tarjeta en "Recursos" con acceso offline (PDFs locales) a las principales Ordenanzas de Gijón e indicativos visuales sobre su estado legal en vigor.</p>
                             </div>
                         </div>
 
-                        <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <div class="p-2 bg-emerald-100 text-emerald-600 rounded-xl mt-1">
-                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        <!-- Novedades v0.81 -->
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-6 mb-2 border-b border-slate-200 pb-2">Anteriormente (v0.81)</h4>
+                        
+                        <div class="flex items-start space-x-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                            <div class="p-2 bg-slate-200 text-slate-500 rounded-xl mt-1">
+                                <i data-lucide="smartphone" class="w-4 h-4"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Sincronización del Tablón</h4>
+                                <h4 class="font-bold text-slate-700 text-sm">Nuevos Formatos en Esquemas</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Tarjetas con botones independientes para descargar esquemas en formato Horizontal (PC) o Vertical (Móvil).</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                            <div class="p-2 bg-slate-200 text-slate-500 rounded-xl mt-1">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-700 text-sm">Sincronización del Tablón</h4>
                                 <p class="text-xs text-slate-500 leading-relaxed">Actualizada la información del Tablón de Anuncios y migrados los datos al entorno de producción principal.</p>
                             </div>
                         </div>
                     </div>
 
-                    <button onclick="closeMediaViewer()" class="w-full bg-navy text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
+                    <button onclick="closeMediaViewer()" class="w-full bg-navy text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all mt-4">
                         ¡Entendido!
                     </button>
                 </div>
             `;
-            openMediaViewer('', 'html', 'Actualización v0.81');
+            openMediaViewer('', 'html', 'Actualización v0.82');
             document.getElementById('viewer-container').innerHTML = content;
             lucide.createIcons();
 
             // Marcar como vista
-            localStorage.setItem('portal_last_version_seen', '0.81');
+            localStorage.setItem('portal_last_version_seen', '0.82');
         }
 
         function checkChangelog() {
             const lastSeen = localStorage.getItem('portal_last_version_seen');
-            if (lastSeen !== '0.81') {
+            if (lastSeen !== '0.82') {
                 setTimeout(showChangelog, 1500); // Dar un margen para que cargue la interfaz
             }
         }
