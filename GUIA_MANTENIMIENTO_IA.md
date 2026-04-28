@@ -22,3 +22,14 @@ El proyecto principal se aloja en el repositorio. Una vez que testees en local l
 2. `git commit -m "Descripción de lo añadido"`
 3. `git push`
 Los recursos, PDFs y MP4 proporcionados por el usuario siempre irán a nivel de raíz, junto a este archivo y a `index.html`.
+
+## 5. Calendario de Turnos y Festivos (Gijón / Asturias)
+Al generar calendarios o modificar turnos, DEBES aplicar automáticamente las siguientes reglas de festivos para Gijón:
+- **Festivos Fijos Nacionales/Autonómicos:** 1-Ene, 6-Ene, 1-May, 15-Ago, 8-Sep (Día de Asturias), 12-Oct, 1-Nov, 6-Dic, 8-Dic, 25-Dic.
+- **Festivos Locales Gijón:** 29-Jun (San Pedro).
+- **Festivos Variables (Basados en Pascua - Algoritmo Meeus/Jones/Butcher):**
+  - Jueves Santo (-3 días de Pascua).
+  - Viernes Santo (-2 días de Pascua).
+  - Martes de Carnaval / Antroxu (-47 días de Pascua).
+- **Regla del Domingo (Traslado Legal):** Si un festivo FIJO cae en domingo, se debe aplicar una lógica para que el Lunes inmediatamente siguiente sea festivo automáticamente.
+- **Colores:** Los domingos y festivos usan la clase `text-red-500` (los festivos siempre tienen el mismo rojo puro, independientemente del fondo). Los sábados usan `text-purple-500` por ser considerados "medio festivos" en los turnos.
