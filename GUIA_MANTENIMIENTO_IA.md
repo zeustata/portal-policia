@@ -33,3 +33,7 @@ Al generar calendarios o modificar turnos, DEBES aplicar automáticamente las si
   - Martes de Carnaval / Antroxu (-47 días de Pascua).
 - **Regla del Domingo (Traslado Legal):** Si un festivo FIJO cae en domingo, se debe aplicar una lógica para que el Lunes inmediatamente siguiente sea festivo automáticamente.
 - **Colores:** Los domingos y festivos usan la clase `text-red-500` (los festivos siempre tienen el mismo rojo puro, independientemente del fondo). Los sábados usan `text-purple-500` por ser considerados "medio festivos" en los turnos.
+- **Resumen de Nómina (UI):** Debajo del calendario mensual, debe aparecer siempre un resumen automático con el cómputo de Festivos, Sábados y Medias Nocturnidades (Tardes) trabajadas en ese mes específico.
+- **Exportación PDF Anual:** El generador de PDF debe incluir:
+  - Cómputo anual de toda la jornada (Mañanas, Tardes, Noches, Libres, Festivos y Sábados trabajados).
+  - Estética "vistosa" con colores rojo (festivos) y morado (sábados) aplicados a los números de los meses, similar a la interfaz web.

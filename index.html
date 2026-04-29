@@ -617,6 +617,41 @@
                     <!-- Vehículos se cargarán aquí -->
                 </div>
             </section>
+
+            <!-- Tab: Herramienta Canjes -->
+            <section id="content-canjes" class="tab-content space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <button onclick="switchTab('utilidades')"
+                        class="p-2 text-slate-500 hover:text-navy flex items-center text-sm font-semibold">
+                        <i data-lucide="chevron-left" class="w-5 h-5 mr-1"></i> Volver
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Base de Datos DGT 2026</span>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-3xl border border-slate-200 space-y-6">
+                    <div class="text-center space-y-2">
+                        <h2 class="text-xl font-bold text-navy">Canje de Permisos</h2>
+                        <p class="text-xs text-slate-500">Consulta si un permiso extranjero es homologable en España</p>
+                    </div>
+
+                    <div class="relative">
+                        <i data-lucide="globe" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                        <input type="text" id="canje-country-input" onkeyup="filterCanjeCountries()" placeholder="¿De qué país es el permiso?"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-navy/10 transition-all font-semibold">
+                        
+                        <!-- Suggestions dropdown -->
+                        <div id="canje-suggestions" class="absolute z-50 w-full mt-2 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl max-h-60 overflow-y-auto hidden no-scrollbar">
+                            <!-- Injected here -->
+                        </div>
+                    </div>
+
+                    <div id="canje-result-container" class="hidden animate-fade-in space-y-4">
+                        <!-- Results injected here -->
+                    </div>
+                </div>
+            </section>
         </main>
 
         <!-- Footer -->
@@ -680,6 +715,9 @@
                 renderUtilidadesList();
             } else if (tabId === 'molinon') {
                 renderMolinonList();
+            } else if (tabId === 'canjes') {
+                // No hay lista dinámica que renderizar, pero aseguramos iconos
+                lucide.createIcons();
             } else if (tabId === 'tablon') {
                 renderTablonList();
             }
@@ -897,6 +935,17 @@
                 action: "openMolinon()",
                 links: [
                     { label: "Abrir Herramienta de Control", url: "javascript:openMolinon()", type: "tool", icon: "layout-template", color: "navy" }
+                ]
+            },
+            {
+                id: 3,
+                date: "2026-04-30",
+                title: "Canje Permisos de conducir",
+                subtitle: "Consultar requisitos por país",
+                icon: "file-search",
+                active: false,
+                links: [
+                    { label: "Abrir Herramienta de Canje", url: "javascript:openCanjesTool()", type: "tool", icon: "clipboard-list", color: "indigo" }
                 ]
             },
             {
@@ -1332,12 +1381,187 @@
         // Evento búsqueda
         document.getElementById('molinon-search')?.addEventListener('input', renderMolinonList);
 
-        // Simulacro de refresco automático (cada 5s)
-        setInterval(() => {
-            if (document.getElementById('content-molinon').classList.contains('active')) {
-                fetchMolinonData();
+        // ==========================================
+        // LÓGICA HERRAMIENTA CANJES
+        // ==========================================
+        const canjeCountries = {
+            "UE/EEE": ["Alemania", "Austria", "Bélgica", "Bulgaria", "Chipre", "Croacia", "Dinamarca", "Eslovaquia", "Eslovenia", "Estonia", "Finlandia", "Francia", "Grecia", "Hungría", "Irlanda", "Islandia", "Italia", "Letonia", "Liechtenstein", "Lituania", "Luxemburgo", "Malta", "Noruega", "Países Bajos", "Polonia", "Portugal", "República Checa", "Rumanía", "Suecia"],
+            "Convenio": ["Andorra", "Argelia", "Argentina", "Bolivia", "Brasil", "Chile", "Colombia", "Corea del Sur", "Costa Rica", "Dominicana, Rep.", "Ecuador", "El Salvador", "Filipinas", "Georgia", "Guatemala", "Honduras", "Japón", "Marruecos", "Moldavia", "Mónaco", "Nicaragua", "Panamá", "Paraguay", "Perú", "Reino Unido", "San Marino", "Serbia", "Suiza", "Túnez", "Turquía", "Ucrania", "Uruguay", "Venezuela"]
+        };
+
+        const canjeSpecifics = {
+            "Argentina": { doc: "Apostillado de Legalidad (TAD o Consulado). Validez apostilla: 90 días.", obs: "Protocolo digital activo." },
+            "Marruecos": { tests: "Categorías A/B directas. C/D requieren examen de circulación.", obs: "Prueba en vía abierta obligatoria para profesionales." },
+            "Venezuela": { doc: "Formato tarjeta rígida obligatorio.", obs: "No se aceptan permisos en PDF/impresos." },
+            "Georgia": { tests: "Prueba de circulación para C y D.", date: "Desde 29 Sept 2024" },
+            "Honduras": { tests: "Prueba de circulación para C y D.", date: "Desde 26 Nov 2024" },
+            "Moldavia": { tests: "Destreza (circuito) y circulación para C y D.", date: "Desde 29 Sept 2024" }
+        };
+
+        function openCanjesTool() {
+            switchTab('canjes');
+            const input = document.getElementById('canje-country-input');
+            if (input) input.value = '';
+            const container = document.getElementById('canje-result-container');
+            if (container) container.classList.add('hidden');
+            const suggestions = document.getElementById('canje-suggestions');
+            if (suggestions) suggestions.classList.add('hidden');
+        }
+
+        function filterCanjeCountries() {
+            const input = document.getElementById('canje-country-input');
+            const suggestions = document.getElementById('canje-suggestions');
+            const val = input.value.trim().toLowerCase();
+            
+            if (val.length < 1) {
+                suggestions.classList.add('hidden');
+                return;
             }
-        }, 5000);
+
+            const allCountries = [...canjeCountries["UE/EEE"], ...canjeCountries["Convenio"]];
+            const matches = allCountries.filter(c => c.toLowerCase().includes(val));
+
+            if (matches.length > 0) {
+                suggestions.innerHTML = matches.map(c => `
+                    <div onclick="selectCanjeCountry('${c}')" class="p-4 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 flex items-center justify-between">
+                        <span class="font-bold text-slate-700">${c}</span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
+                    </div>
+                `).join('');
+                suggestions.classList.remove('hidden');
+                lucide.createIcons();
+            } else {
+                suggestions.innerHTML = `
+                    <div onclick="selectCanjeCountry('${input.value.replace(/'/g, "\\'")}')" class="p-4 hover:bg-red-50 cursor-pointer flex items-center justify-between">
+                        <span class="font-bold text-red-600">Ver como 'País sin convenio'</span>
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+                    </div>
+                `;
+                suggestions.classList.remove('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        function selectCanjeCountry(country) {
+            document.getElementById('canje-country-input').value = country;
+            document.getElementById('canje-suggestions').classList.add('hidden');
+            renderCanjeResult(country);
+        }
+
+        function renderCanjeResult(country) {
+            const container = document.getElementById('canje-result-container');
+            container.classList.remove('hidden');
+
+            let regime = "Sin Convenio";
+            let procedure = "Obtención de nuevo permiso español (Formación completa).";
+            let tests = "Examen Teórico Común, Teórico Específico (si aplica) y Circulación.";
+            let docs = "DNI/NIE, Psicotécnico, Tasa 2.1.";
+            let fees = "Tasa 2.1 (94,05 €)";
+            let digital = "No Apto";
+            let color = "red";
+
+            if (canjeCountries["UE/EEE"].includes(country)) {
+                regime = "Unión Europea / EEE";
+                procedure = "Canje voluntario. Obligatorio si hay caducidad, pérdida o tras 2 años de residencia.";
+                tests = "Sin pruebas adicionales (Homologación directa).";
+                docs = "Permiso original, DNI/NIE, Psicotécnico.";
+                fees = "Tasa 2.3 (28,87 €)";
+                digital = "Apto (Sede Electrónica)";
+                color = "emerald";
+            } else if (canjeCountries["Convenio"].includes(country)) {
+                regime = "Convenio Bilateral";
+                procedure = "Obligatorio tras 6 meses de residencia normal en España.";
+                tests = "Generalmente directo para A y B. Profesionales (C/D) suelen requerir pruebas.";
+                docs = "Certificado de Legalidad Apostillado, Permiso Original, NIE/TIE.";
+                fees = "Tasa 2.3 o 2.1 (Si hay pruebas).";
+                digital = "Apto (Salvo categorías C/D)";
+                color = "blue";
+            }
+
+            const spec = canjeSpecifics[country];
+            if (spec) {
+                if (spec.tests) tests = spec.tests;
+                if (spec.doc) docs = spec.doc;
+                if (spec.obs) procedure += ` <br><span class='text-navy font-bold'>Nota: ${spec.obs}</span>`;
+            }
+
+            let validityStatus = "";
+            let infraction = "";
+            let policeAction = "";
+
+            if (regime === "Unión Europea / EEE") {
+                validityStatus = "VÁLIDO (Mientras esté en vigor)";
+                infraction = "Solo si está caducado o > 2 años residencia (Art. 15)";
+                policeAction = "Verificar caducidad. Si reside en España, es válido hasta su vencimiento (salvo camiones/bus: 2 años).";
+            } else if (regime === "Convenio Bilateral") {
+                validityStatus = "VÁLIDO (Límite 6 meses residencia)";
+                infraction = "Denunciar Art. 1.1 RGCond (Cód. 5001) si > 6 meses.";
+                policeAction = "Pedir TIE/NIE. Si la fecha de residencia es de hace más de 6 meses, el permiso NO es válido.";
+            } else {
+                validityStatus = "NO VÁLIDO (Para residentes)";
+                infraction = "Denunciar Art. 1.1 RGCond (Cód. 5001).";
+                policeAction = "Solo válido para TURISTAS (máx 6 meses). Si tiene residencia, debe obtener permiso español.";
+            }
+
+            container.innerHTML = `
+                <div class="space-y-4 pt-4">
+                    <div class="p-4 rounded-2xl bg-${color}-50 border border-${color}-100">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div class="p-2 bg-${color}-500 text-white rounded-lg">
+                                <i data-lucide="${regime === 'Sin Convenio' ? 'x-circle' : 'check-check'}" class="w-5 h-5"></i>
+                            </div>
+                            <h3 class="font-bold text-${color}-900">${country.toUpperCase()}</h3>
+                        </div>
+                        <p class="text-[10px] font-bold text-${color}-600 uppercase tracking-widest">Régimen: ${regime}</p>
+                    </div>
+
+                    <!-- BLOQUE ACTUACIÓN POLICIAL -->
+                    <div class="p-5 bg-navy rounded-2xl shadow-xl space-y-3 border border-white/10 animate-fade-in">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Protocolo Operativo Agente</span>
+                            <i data-lucide="shield-check" class="w-4 h-4 text-gold"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">Estado en Vía:</span>
+                                <span class="text-xs font-black ${validityStatus.includes('VÁLIDO') ? 'text-emerald-400' : 'text-red-400'}">${validityStatus}</span>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase">Comprobación:</span>
+                                <p class="text-xs text-white font-medium leading-relaxed">${policeAction}</p>
+                            </div>
+                            <div class="pt-1">
+                                <span class="text-[10px] text-gold/80 font-bold uppercase">Infracción:</span>
+                                <p class="text-[11px] text-slate-300 italic">${infraction}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Procedimiento y Plazos</p>
+                            <p class="text-xs text-slate-700 font-medium">${procedure}</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Pruebas Adicionales</p>
+                            <p class="text-xs text-slate-700 font-medium">${tests}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Tasas DGT</p>
+                                <p class="text-xs text-navy font-bold">${fees}</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Canje Digital</p>
+                                <p class="text-xs ${digital.includes('Apto') ? 'text-emerald-600' : 'text-red-600'} font-bold">${digital}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
         function renderInstructions() {
             const container = document.getElementById('instructions-container');
