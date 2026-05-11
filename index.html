@@ -2282,6 +2282,7 @@
 
             // Contadores anuales
             let totalM = 0, totalT = 0, totalN = 0, totalL = 0, totalF = 0, totalS = 0;
+            let specialDaysWorkedAnual = [];
 
             // Fondo sutil para el encabezado principal
             doc.setFillColor(0, 43, 91);
@@ -2335,24 +2336,31 @@
                     for (let i = (tableData.length === 0 ? startCol : 0); i < 7 && currentDay <= lastDay.getDate(); i++) {
                         const date = new Date(ano, m, currentDay);
                         const turno = getTurno(date, grupo);
-                        const isFestivoDia = date.getDay() === 0 || esFestivo(date);
+                        const isSpecialDay = (date.getDate() === 24 || date.getDate() === 31) && date.getMonth() === 11;
+                        const isFestivoDia = date.getDay() === 0 || esFestivo(date) || isSpecialDay;
                         const isSabado = date.getDay() === 6;
 
                         // Contabilizar
-                        if (turno === 'M') {
-                            totalM++;
-                            if (isFestivoDia) totalF++; else if (isSabado) totalS++;
-                        } else if (turno === 'T') {
-                            totalT++;
-                            if (isFestivoDia) totalF++; else if (isSabado) totalS++;
-                        } else if (turno === 'N') {
-                            totalN++;
-                            if (isFestivoDia) totalF++; else if (isSabado) totalS++;
+                        if (turno === 'M' || turno === 'T' || turno === 'N') {
+                            if (isSpecialDay) {
+                                specialDaysWorkedAnual.push(date.getDate());
+                            } else if (isFestivoDia) {
+                                totalF++;
+                            }
+                            
+                            if (turno === 'M') totalM++;
+                            else if (turno === 'T') totalT++;
+                            else if (turno === 'N') totalN++;
+
+                            if (isFestivoDia || isSabado) {
+                                // Sub-contabilidad de festivos/sábados ya se hizo arriba
+                                if (isSabado && !isFestivoDia) totalS++;
+                            }
                         } else if (turno === 'L') {
                             totalL++;
                         }
 
-                        rowData[i] = { content: currentDay, turno: turno, isFestivo: isFestivoDia, isSabado: isSabado };
+                        rowData[i] = { content: currentDay, turno: turno, isFestivo: isFestivoDia && !isSpecialDay, isSpecialDay: isSpecialDay, isSabado: isSabado };
                         currentDay++;
                     }
                     tableData.push(rowData);
@@ -2401,7 +2409,10 @@
                             }
 
                             // Prioridad de color para festivos y sábados (mismo criterio que en la web)
-                            if (raw.isFestivo) {
+                            if (raw.isSpecialDay) {
+                                data.cell.styles.textColor = [217, 119, 6]; // Ámbar/Amarillo intenso
+                                data.cell.styles.fontStyle = 'bold';
+                            } else if (raw.isFestivo) {
                                 data.cell.styles.textColor = [220, 38, 38]; // Rojo intenso
                                 data.cell.styles.fontStyle = 'bold';
                             } else if (raw.isSabado) {
@@ -2442,7 +2453,14 @@
             doc.text(`Días Libres: ${totalL}`, col2, summaryY + 16);
             
             doc.setTextColor(220, 38, 38); // Rojo para festivos
-            doc.text(`Festivos/Dom Trabajados: ${totalF}`, col3, summaryY + 12);
+            let festivosText = `Festivos/Dom Trabajados: ${totalF}`;
+            doc.text(festivosText, col3, summaryY + 12);
+            
+            if (specialDaysWorkedAnual.length > 0) {
+                doc.setTextColor(217, 119, 6); // Ámbar
+                const offset = doc.getTextWidth(festivosText) + 2;
+                doc.text(`+ ${specialDaysWorkedAnual.length}`, col3 + offset, summaryY + 12);
+            }
             doc.setTextColor(147, 51, 234); // Púrpura para sábados
             doc.text(`Sábados Trabajados: ${totalS}`, col3, summaryY + 16);
 
@@ -2502,6 +2520,7 @@
             
             const today = new Date();
             let festivosCount = 0;
+            let specialDaysWorked = [];
             let sabadosCount = 0;
             let mediaNocturnidadCount = 0;
             
@@ -2509,7 +2528,8 @@
             for (let i = 1; i <= lastDay.getDate(); i++) {
                 const currentDate = new Date(currentCalYear, currentCalMonth, i);
                 const turno = getTurno(currentDate, currentCalGrupo);
-                const isFestivoDia = currentDate.getDay() === 0 || esFestivo(currentDate);
+                const isSpecialDay = i === 24 || i === 31 ? currentCalMonth === 11 : false;
+                const isFestivoDia = currentDate.getDay() === 0 || esFestivo(currentDate) || isSpecialDay;
                 const isSabado = currentDate.getDay() === 6;
                 
                 let bgColor = "bg-transparent";
@@ -2523,7 +2543,8 @@
                     turnoLabel = "M"; 
                     borderStyles = "border border-blue-400/50";
                     
-                    if (isFestivoDia) festivosCount++;
+                    if (isSpecialDay) specialDaysWorked.push(i);
+                    else if (isFestivoDia) festivosCount++;
                     else if (isSabado) sabadosCount++;
                 }
                 if (turno === 'T') { 
@@ -2533,7 +2554,8 @@
                     borderStyles = "border border-emerald-400/50";
                     mediaNocturnidadCount++;
                     
-                    if (isFestivoDia) festivosCount++;
+                    if (isSpecialDay) specialDaysWorked.push(i);
+                    else if (isFestivoDia) festivosCount++;
                     else if (isSabado) sabadosCount++;
                 }
                 if (turno === 'L') { 
@@ -2543,7 +2565,9 @@
                     borderStyles = "border border-slate-100";
                 }
                 
-                if (isFestivoDia) {
+                if (isSpecialDay) {
+                    textColor = "text-amber-500";
+                } else if (isFestivoDia) {
                     textColor = "text-red-500";
                 } else if (isSabado) {
                     textColor = "text-purple-500";
@@ -2573,7 +2597,9 @@
                             </div>
                             <div class="grid grid-cols-3 gap-2">
                                 <div class="bg-red-50/50 p-2 rounded-xl border border-red-100/30 flex flex-col items-center">
-                                    <span class="text-[16px] font-black text-red-600 leading-none">${festivosCount}</span>
+                                    <span class="text-[16px] font-black text-red-600 leading-none">
+                                        ${festivosCount}${specialDaysWorked.length > 0 ? `<span class="text-amber-500"> + ${specialDaysWorked.length}</span>` : ''}
+                                    </span>
                                     <span class="text-[7px] font-bold text-red-500/60 uppercase tracking-tighter mt-1">Festivos</span>
                                 </div>
                                 <div class="bg-purple-50/50 p-2 rounded-xl border border-purple-100/30 flex flex-col items-center">
