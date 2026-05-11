@@ -1917,7 +1917,7 @@
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Versión</p>
-                                <p class="text-sm font-bold text-navy">v0.90</p>
+                                <p class="text-sm font-bold text-navy">v1.00</p>
                             </div>
                             <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                                 <p class="text-[9px] font-bold text-slate-400 uppercase">Entorno</p>
@@ -1943,63 +1943,55 @@
                         <div class="inline-flex p-3 bg-gradient-to-br from-navy to-blue-600 text-white rounded-2xl shadow-lg mb-2">
                             <i data-lucide="sparkles" class="w-8 h-8"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-navy">¡Bienvenido a la v0.90!</h3>
-                        <p class="text-slate-500 text-sm italic">Calendario Premium y Gestión Operativa</p>
+                        <h3 class="text-2xl font-bold text-navy">¡Bienvenido a la v1.00!</h3>
+                        <p class="text-slate-500 text-sm italic">Calendarios Completos y Nómina</p>
                     </div>
 
                     <div class="space-y-4">
-                        <!-- Novedad: Calendario -->
+                        <!-- Novedad: Todos los grupos -->
                         <div class="flex items-start space-x-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 shadow-sm relative overflow-hidden">
-                            <div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg">ESTRELLA</div>
+                            <div class="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg">MAYOR</div>
                             <div class="p-2 bg-blue-100 text-blue-600 rounded-xl mt-1">
-                                <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                                <i data-lucide="calendar-check" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Nuevo Calendario de Turnos</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Implementado motor de cálculo para grupos <b>AN y BN Tráfico</b> con patrón 6-6. Estética "Liquid Glass" con navegación mensual y anual rápida.</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Todos los Grupos Activos</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Implementados los calendarios para <b>AN, BN, AP y BP</b>. Ahora todo el personal a 2 turnos tiene su cuadrante disponible.</p>
                             </div>
                         </div>
 
-                        <!-- Novedad: PDF -->
-                        <div class="flex items-start space-x-4 p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 shadow-sm">
-                            <div class="p-2 bg-emerald-100 text-emerald-600 rounded-xl mt-1">
-                                <i data-lucide="file-down" class="w-5 h-5"></i>
+                        <!-- Novedad: 24 y 31 Dic -->
+                        <div class="flex items-start space-x-4 p-4 bg-amber-50/50 rounded-2xl border border-amber-100 shadow-sm">
+                            <div class="p-2 bg-amber-100 text-amber-600 rounded-xl mt-1">
+                                <i data-lucide="calculator" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Descarga de Cuadrante Anual</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Generación de PDF profesional de todo el año en un solo folio A4, optimizado para impresión y con leyenda de colores.</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Nómina Especial (24 y 31 Dic)</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Los días 24 y 31 de diciembre ahora se marcan en <b>amarillo</b> y se suman por separado en el resumen (+1 / +2) para facilitar el control de nómina.</p>
                             </div>
                         </div>
 
-                        <!-- Novedad: Ordenanzas -->
+                        <!-- Novedad: Recursos -->
                         <div class="flex items-start space-x-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                             <div class="p-2 bg-slate-100 text-slate-600 rounded-xl mt-1">
-                                <i data-lucide="library" class="w-5 h-5"></i>
+                                <i data-lucide="radio" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Ordenanzas de Gijón (v0.82)</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed">Acceso directo a Ordenanzas Municipales (Convivencia, Movilidad, Animales) con indicativos de vigencia legal.</p>
+                                <h4 class="font-bold text-slate-800 text-sm">Guía de Códigos Policiales</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed">Añadida nueva tarjeta en Recursos con la infografía de códigos de comunicación por radio.</p>
                             </div>
                         </div>
 
                         <!-- Mejoras menores -->
-                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-4 mb-2 text-center">Mejoras desde v0.80</h4>
+                        <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-4 mb-2 text-center">Otras mejoras</h4>
                         <div class="grid grid-cols-2 gap-2 text-[10px] text-slate-500 font-medium">
                             <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                <i data-lucide="zap" class="w-3 h-3 text-amber-500"></i>
-                                <span>Selector de fecha rápido</span>
+                                <i data-lucide="clock" class="w-3 h-3 text-blue-500"></i>
+                                <span>Iconos unificados</span>
                             </div>
                             <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                <i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i>
-                                <span>Día actual en Dorado</span>
-                            </div>
-                            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                <i data-lucide="smartphone" class="w-3 h-3 text-blue-500"></i>
-                                <span>UI optimizada móvil</span>
-                            </div>
-                            <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                <i data-lucide="shield" class="w-3 h-3 text-navy"></i>
-                                <span>Persistencia corregida</span>
+                                <i data-lucide="file-text" class="w-3 h-3 text-emerald-500"></i>
+                                <span>PDF con festivos amarillos</span>
                             </div>
                         </div>
                     </div>
@@ -2009,17 +2001,17 @@
                     </button>
                 </div>
             `;
-            openMediaViewer('', 'html', 'Novedades v0.90');
+            openMediaViewer('', 'html', 'Novedades v1.00');
             document.getElementById('viewer-container').innerHTML = content;
             lucide.createIcons();
 
             // Marcar como vista
-            localStorage.setItem('portal_last_version_seen', '0.90');
+            localStorage.setItem('portal_last_version_seen', '1.00');
         }
 
         function checkChangelog() {
             const lastSeen = localStorage.getItem('portal_last_version_seen');
-            if (lastSeen !== '0.90') {
+            if (lastSeen !== '1.00') {
                 setTimeout(showChangelog, 1500); 
             }
         }
