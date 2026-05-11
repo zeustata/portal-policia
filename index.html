@@ -886,10 +886,10 @@
                 icon: "calendar-days",
                 active: false,
                 links: [
-                    { label: "2 Turnos AN", url: "javascript:abrirCalendarioTurnos('AN_2TURNOS')", type: "js", icon: "motorcycle", color: "blue" },
-                    { label: "2 Turnos BN", url: "javascript:abrirCalendarioTurnos('BN_2TURNOS')", type: "js", icon: "motorcycle", color: "indigo" },
-                    { label: "2 Turnos AP", url: "#", type: "html", icon: "clock", color: "slate" },
-                    { label: "2 Turnos BP", url: "#", type: "html", icon: "clock", color: "slate" }
+                    { label: "2 Turnos AN", url: "javascript:abrirCalendarioTurnos('AN_2TURNOS')", type: "js", icon: "clock", color: "blue" },
+                    { label: "2 Turnos BN", url: "javascript:abrirCalendarioTurnos('BN_2TURNOS')", type: "js", icon: "clock", color: "indigo" },
+                    { label: "2 Turnos AP", url: "javascript:abrirCalendarioTurnos('AP_2TURNOS')", type: "js", icon: "clock", color: "blue" },
+                    { label: "2 Turnos BP", url: "javascript:abrirCalendarioTurnos('BP_2TURNOS')", type: "js", icon: "clock", color: "indigo" }
                 ]
             },
             {
@@ -2131,7 +2131,9 @@
         // Fechas Ancla (Día 0 = Primer día de Mañanas del ciclo de 24 días)
         const TURNOS_ANCHOR = {
             'AN_2TURNOS': '2026-05-07', // El 7 de Mayo de 2026 entra de Mañanas (Día 0)
-            'BN_2TURNOS': '2026-04-25'  // 12 días de desfase respecto a AN (Entra de Mañanas cuando AN entra de Tardes)
+            'BN_2TURNOS': '2026-04-25', // 12 días de desfase respecto a AN (Entra de Mañanas cuando AN entra de Tardes)
+            'AP_2TURNOS': '2026-05-01', // 6 días antes que AN (Entra de Tardes cuando AN está Libre)
+            'BP_2TURNOS': '2026-05-13'  // 6 días después que AN
         };
 
         let currentCalMonth = new Date().getMonth();
