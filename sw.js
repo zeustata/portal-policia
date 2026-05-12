@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portal-policia-cache-v1.16';
+const CACHE_NAME = 'portal-policia-cache-v1.18';
 const ASSETS = [
     './',
     './index.html',
