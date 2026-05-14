@@ -14,34 +14,11 @@
     <link rel="apple-touch-icon" href="icono.jpg">
 
 
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        /* Fallbacks críticos para cuando falla el CSS externo o en móviles con carga lenta */
-        * { box-sizing: border-box; }
-        
-        .w-24 { width: 6rem !important; }
-        .h-24 { height: 6rem !important; }
-        .rounded-full { border-radius: 9999px !important; }
-        .flex { display: flex !important; }
-        .flex-col { flex-direction: column !important; }
-        .items-center { align-items: center !important; }
-        .justify-center { justify-content: center !important; }
-        .text-center { text-align: center !important; }
-        
-        /* Limitar tamaño de iconos SVG si Tailwind no carga */
-        svg {
-            width: 24px;
-            height: 24px;
-        }
-        
-        .tab-button svg, .vehicle-card svg {
-            width: 18px;
-            height: 18px;
-        }
-
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
         @keyframes fadeInUp {
