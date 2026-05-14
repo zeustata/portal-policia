@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portal-policia-cache-v1.23';
+const CACHE_NAME = 'portal-policia-cache-v1.24';
 const ASSETS = [
     './',
     './index.html',
@@ -34,26 +34,35 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Estrategia: "Network First" para el HTML, "Cache First" para el resto de recursos
+// Estrategia: Network First para HTML y recursos externos (CDNs), Cache First para imágenes locales
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // Si es el archivo HTML principal, intentamos obtenerlo de la red primero
-    if (url.origin === location.origin && (url.pathname === '/' || url.pathname.endsWith('index.html'))) {
+    // Network First para HTML y CDNs externos
+    if ((url.origin === location.origin && (url.pathname === '/' || url.pathname.endsWith('index.html'))) || url.origin !== location.origin) {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
-                    const copy = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+                    // Solo guardamos en caché si la respuesta es válida (o opaca para CDNs)
+                    if (response && (response.status === 200 || response.type === 'opaque')) {
+                        const copy = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+                    }
                     return response;
                 })
                 .catch(() => caches.match(event.request))
         );
     } else {
-        // Para el resto de recursos (imágenes, scripts, estilos), priorizamos la caché
+        // Cache First para el resto (imágenes, manifest locales)
         event.respondWith(
             caches.match(event.request).then((response) => {
-                return response || fetch(event.request);
+                return response || fetch(event.request).then((fetchRes) => {
+                    if (fetchRes && fetchRes.status === 200) {
+                        const copy = fetchRes.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+                    }
+                    return fetchRes;
+                });
             })
         );
     }
