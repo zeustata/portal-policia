@@ -1,11 +1,11 @@
-const CACHE_NAME = 'portal-policia-cache-v1.25';
+const CACHE_NAME = 'portal-policia-cache-v1.26';
 const ASSETS = [
     './',
     './index.html',
+    './styles.css',
     './manifest.json',
     './icono.jpg',
     './codigos_policiales.jpg',
-    'https://cdn.tailwindcss.com',
     'https://unpkg.com/lucide@latest'
 ];
 
