@@ -26,7 +26,6 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -34,14 +33,12 @@
         }
 
         .animate-fade-in {
-            animation: fadeInUp 0.6s ease-out forwards;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #e2e8f0;
-            min-height: 100vh;
+            background-color: #e2e8f0; /* Restauramos la base azulada original */
             padding-top: env(safe-area-inset-top, 2.5rem);
             padding-bottom: env(safe-area-inset-bottom, 2.5rem);
             padding-left: env(safe-area-inset-left, 1rem);
@@ -59,11 +56,11 @@
             height: 100%;
             z-index: -1;
             background-image:
-                radial-gradient(at 0% 0%, hsla(215, 100%, 75%, 0.8) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, hsla(43, 100%, 65%, 0.5) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(200, 100%, 60%, 0.6) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, hsla(220, 100%, 70%, 0.7) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, hsla(0, 0%, 100%, 0.6) 0px, transparent 70%);
+                radial-gradient(at 0% 0%, rgba(214, 26, 33, 0.16) 0px, transparent 50%),    /* Rojo carmesí suave */
+                radial-gradient(at 100% 0%, hsla(215, 100%, 75%, 0.75) 0px, transparent 55%), /* Azul brillante original */
+                radial-gradient(at 100% 100%, rgba(214, 26, 33, 0.12) 0px, transparent 50%), /* Rojo carmesí suave */
+                radial-gradient(at 0% 100%, hsla(220, 100%, 70%, 0.65) 0px, transparent 55%), /* Azul brillante original */
+                radial-gradient(at 50% 50%, rgba(255, 215, 0, 0.06) 0px, transparent 70%);   /* Oro de la corona */
             background-size: cover;
             pointer-events: none;
         }
@@ -85,24 +82,36 @@
         }
 
         .instruction-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        /* EFECTO LIQUID GLASS CLARO */
         .glass {
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-top: 1px solid rgba(255, 255, 255, 0.8);
-            border-left: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 10px 40px -10px rgba(0, 43, 91, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.75);
+            border-left: 1px solid rgba(255, 255, 255, 0.75);
+            box-shadow: 0 10px 40px -10px rgba(0, 43, 91, 0.08);
             border-radius: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* EFECTO HOVER DE CONTRASTE ROJO SOBRE AZUL (SIRENA/ESCUDO) */
+        .glass:hover,
+        .instruction-card:hover {
+            transform: translateY(-4px) scale(1.015);
+            border-color: rgba(214, 26, 33, 0.5) !important; /* Rojo carmesí brillante en hover */
+            /* Resplandor doble: rojo por un lado, azul policial por el otro */
+            box-shadow: 0 15px 35px rgba(214, 26, 33, 0.15), 0 5px 15px rgba(37, 99, 235, 0.08);
+            background: rgba(255, 255, 255, 0.65);
         }
 
         .content-panel {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease-out, opacity 0.3s ease-in;
+            transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-in, padding 0.3s ease;
             opacity: 0;
         }
 
@@ -114,6 +123,7 @@
 
         .instruction-card.active .chevron-icon {
             transform: rotate(180deg);
+            color: #d61a21 !important; /* Chevron rojo carmesí activo */
         }
 
         .action-button {
@@ -144,6 +154,7 @@
             height: 3px;
             background-color: #FFD700;
             border-radius: 99px;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
         }
 
         .tab-content {
@@ -152,8 +163,67 @@
 
         .tab-content.active {
             display: block;
-            animation: fadeInUp 0.4s ease-out;
         }
+
+        /* ANIMACIÓN EN CASCADA PARA LISTAS DINÁMICAS */
+        #instructions-container > div,
+        #instrucciones-list-container > div,
+        #dgt-list-container > div,
+        #recursos-list-container > div,
+        #utilidades-list-container > div,
+        #tablon-list-container > div,
+        #molinon-list > div {
+            opacity: 0;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        #instructions-container > div:nth-child(1),
+        #instrucciones-list-container > div:nth-child(1),
+        #dgt-list-container > div:nth-child(1),
+        #recursos-list-container > div:nth-child(1),
+        #utilidades-list-container > div:nth-child(1),
+        #tablon-list-container > div:nth-child(1),
+        #molinon-list > div:nth-child(1) { animation-delay: 0.05s; }
+
+        #instructions-container > div:nth-child(2),
+        #instrucciones-list-container > div:nth-child(2),
+        #dgt-list-container > div:nth-child(2),
+        #recursos-list-container > div:nth-child(2),
+        #utilidades-list-container > div:nth-child(2),
+        #tablon-list-container > div:nth-child(2),
+        #molinon-list > div:nth-child(2) { animation-delay: 0.1s; }
+
+        #instructions-container > div:nth-child(3),
+        #instrucciones-list-container > div:nth-child(3),
+        #dgt-list-container > div:nth-child(3),
+        #recursos-list-container > div:nth-child(3),
+        #utilidades-list-container > div:nth-child(3),
+        #tablon-list-container > div:nth-child(3),
+        #molinon-list > div:nth-child(3) { animation-delay: 0.15s; }
+
+        #instructions-container > div:nth-child(4),
+        #instrucciones-list-container > div:nth-child(4),
+        #dgt-list-container > div:nth-child(4),
+        #recursos-list-container > div:nth-child(4),
+        #utilidades-list-container > div:nth-child(4),
+        #tablon-list-container > div:nth-child(4),
+        #molinon-list > div:nth-child(4) { animation-delay: 0.2s; }
+
+        #instructions-container > div:nth-child(5),
+        #instrucciones-list-container > div:nth-child(5),
+        #dgt-list-container > div:nth-child(5),
+        #recursos-list-container > div:nth-child(5),
+        #utilidades-list-container > div:nth-child(5),
+        #tablon-list-container > div:nth-child(5),
+        #molinon-list > div:nth-child(5) { animation-delay: 0.25s; }
+
+        #instructions-container > div:nth-child(n+6),
+        #instrucciones-list-container > div:nth-child(n+6),
+        #dgt-list-container > div:nth-child(n+6),
+        #recursos-list-container > div:nth-child(n+6),
+        #utilidades-list-container > div:nth-child(n+6),
+        #tablon-list-container > div:nth-child(n+6),
+        #molinon-list > div:nth-child(n+6) { animation-delay: 0.3s; }
 
         /* Responsive & Safe Area */
         .no-scrollbar::-webkit-scrollbar {
@@ -163,6 +233,22 @@
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 43, 91, 0.15);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(214, 26, 33, 0.4);
         }
 
         /* PWA Install Banner Style */
@@ -319,6 +405,39 @@
             border: none;
             background: white;
             border-radius: 0.5rem;
+        }
+
+        /* SOBREESCRITURAS DE TEMA CLARO PREMIUM */
+
+        /* Header Escudo (Borde y hover interactivo) */
+        header .inline-block.bg-white {
+            border: 2px solid rgba(0, 43, 91, 0.15) !important;
+            transition: all 0.3s ease !important;
+        }
+        header .inline-block.bg-white:hover {
+            border-color: #d61a21 !important;
+            box-shadow: 0 0 15px rgba(214, 26, 33, 0.3) !important;
+            transform: scale(1.05);
+        }
+
+        /* H1 Gradient (Azul Marino del portal -> Azul Real -> Rojo Carmesí del escudo) */
+        h1.text-navy {
+            background: linear-gradient(135deg, #002b5b 30%, #1d4ed8 70%, #d61a21 100%) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            filter: drop-shadow(0 2px 8px rgba(0, 43, 91, 0.1)) !important;
+        }
+
+        /* Weather Widget glass claro */
+        #weather-widget .bg-white\/80 {
+            background: rgba(255, 255, 255, 0.65) !important;
+            border-color: rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 8px 30px rgba(0, 43, 91, 0.04) !important;
+        }
+        #weather-widget .bg-white\/60 {
+            background: rgba(255, 255, 255, 0.45) !important;
+            border-color: rgba(255, 255, 255, 0.6) !important;
         }
     </style>
 </head>
