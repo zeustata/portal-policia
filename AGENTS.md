@@ -38,6 +38,12 @@
   - Si Lendo indica que es para la Constitución Suprema, se sincroniza de inmediato en los archivos de memoria de todos los proyectos (Tiempo, Portal_Policia_Gijon, Porras, Biweger, etc.).
   - Si es local, se añade únicamente al bloque de leyes específicas del proyecto en curso.
 
+### 7. Publicación en Google Play y Supresión de Barras CCT (Digital Asset Links Obligatorio)
+- Toda aplicación web o PWA empaquetada para Google Play Store (TWA) dentro del ecosistema zeustata debe contar obligatoriamente con verificación de **Digital Asset Links** para eliminar la barra superior del navegador (Chrome Custom Tabs) y garantizar la experiencia 100% nativa a pantalla completa.
+- **Ubicación obligatoria en la raíz:** El archivo `assetlinks.json` debe alojarse siempre en la raíz del dominio principal (`https://zeustata.github.io/.well-known/assetlinks.json`) acompañado de un archivo `.nojekyll` (para evitar que GitHub Pages oculte la carpeta), además de replicarse en la subcarpeta del proyecto específico.
+- **Extracción de huella oficial:** La huella SHA-256 de firma debe obtenerse en Google Play Console dentro de *Protegida con Play* -> *Protección de Play Store* -> *Firma de aplicaciones*, utilizando preferentemente el bloque oficial de *Vínculos de recursos digitales (Digital Asset Links)*.
+- **Registro maestro centralizado:** El repositorio `zeustata.github.io` actuará como custodio central acumulando las declaraciones de todas las aplicaciones de la cuenta (`com.zeustata.[nombre-app]`).
+
 ---
 
 ## 📑 PARTE II: LEYES ESPECÍFICAS DEL PROYECTO: PORTAL POLICÍA LOCAL GIJÓN
@@ -56,7 +62,8 @@ px tailwindcss@3.4.1 -i input.css -o styles.css --minify
 - El despliegue a la web (git push origin main) se hace **ÚNICA Y EXCLUSIVAMENTE** desde la carpeta principal Portal_Policia_Gijon.
 
 ### 3. Regla Anti-Filtro Fantasma en el Tablón de Novedades
-- Al añadir tarjetas en instruccionesDGTData, ecursosData o similares: **NUNCA DEJAR LA PROPIEDAD LINKS VACÍA (links: [])**.
+- Al añadir tarjetas en instruccionesDGTData, 
+ecursosData o similares: **NUNCA DEJAR LA PROPIEDAD LINKS VACÍA (links: [])**.
 - La función de filtro en index.html oculta automáticamente cualquier tarjeta sin enlaces por considerarla incompleta.
 
 ### 4. Calendario Oficial de Turnos y Festivos de Gijón (Asturias)
